@@ -8,9 +8,11 @@ public class GenericUser extends GenericObject{
 	protected final int reviewCount;
 	protected final String name;
 	protected final int averageStars;
+	protected final String id;
 	public GenericUser(String id, String url, HashMap<String, Integer> votes, int reviewCount, String name,
 					   int averageStars) {
 		super(id, "user");
+		this.id = id;
 		this.url = url;
 		this.votes = votes;
 		this.reviewCount = reviewCount;
