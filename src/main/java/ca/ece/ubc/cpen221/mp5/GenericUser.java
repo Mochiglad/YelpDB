@@ -7,17 +7,16 @@ public class GenericUser extends GenericObject{
 	protected final HashMap<String, Integer> votes;
 	protected final int reviewCount;
 	protected final String name;
-	protected final int averageStars;
-	protected final String id;
+	protected final double averageStars;
 	public GenericUser(String id, String url, HashMap<String, Integer> votes, int reviewCount, String name,
-					   int averageStars) {
+					   double averageStars2) {
 		super(id, "user");
 		this.id = id;
 		this.url = url;
 		this.votes = votes;
 		this.reviewCount = reviewCount;
 		this.name = name;
-		this.averageStars = averageStars;
+		this.averageStars = averageStars2;
 	}
 	public String getUrl() {
 		return this.url;
@@ -28,7 +27,7 @@ public class GenericUser extends GenericObject{
 	public int getReviewCount() {
 		return this.reviewCount;
 	}
-	public int getAverageStars() {
+	public double getAverageStars() {
 		return this.averageStars;
 	}
 	public HashMap<String, Integer> getVotes(){

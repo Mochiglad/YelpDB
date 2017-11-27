@@ -11,13 +11,13 @@ public class GenericReview extends GenericObject{
 	protected final String userId;
 	protected final String date;
 	
-	public GenericReview(String id, String businessId, HashMap<String, Integer> votes, String text, int stars,
+	public GenericReview(String id, String businessId, HashMap<String, Integer> votes, String text, int stars2,
 						String userId, String date) {
 		super(id, "review");
 		this.businessId = businessId;
 		this.votes = votes;
 		this.text = text;
-		this.stars = stars;
+		this.stars = stars2;
 		this.userId = userId;
 		this.date = date;
 	}
