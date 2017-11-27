@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.ToDoubleBiFunction;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,10 +19,11 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+
 public class YelpDb implements MP5Db {
-	private ArrayList<YelpUser> users;
-	private ArrayList<YelpReview> reviews;
-	private ArrayList<YelpRestaurant> restaurants;
+	private HashMap<String,YelpUser> users = new HashMap<String,YelpUser>();
+	private HashMap<String,YelpReview> reviews = new HashMap<String,YelpReview>();;
+	private HashMap<String,YelpRestaurant> restaurants = new HashMap<String,YelpRestaurant>();;
 
 	public YelpDb(String userJsonPath, String reviewJsonPath, String restaurantJsonPath)
 			throws FileNotFoundException, IOException, ParseException {
@@ -41,14 +43,14 @@ public class YelpDb implements MP5Db {
 		String url;
 		double longitude;
 		double latitude;
-		HashSet<String> neighborhoods;
-		HashSet<String> categories;
-		HashSet<String> schools;
+		HashSet<String> neighborhoods = new HashSet<String>();
+		HashSet<String> categories = new HashSet<String>();
+		HashSet<String> schools = new HashSet<String>();
 		String businessId;
 		String name;
 		String state;
 		String BType;
-		int stars;
+		double stars;
 		String city;
 		String fullAddress;
 		int reviewCount;
@@ -56,10 +58,13 @@ public class YelpDb implements MP5Db {
 		int price;
 
 		JSONParser parser = new JSONParser();
-		JSONArray jsonArray = (JSONArray) parser.parse(new FileReader(filePath));
-
-		for (Object o : jsonArray) {
-			JSONObject restaurant = (JSONObject) o;
+		JSONArray jsonArray;
+		BufferedReader buffRead = new BufferedReader(new FileReader(filePath));
+		String line;
+		
+		while(!((line = buffRead.readLine()) == null)){
+		//for (Object o : jsonArray) {
+			JSONObject restaurant = (JSONObject) parser.parse(line);
 			status = (boolean) restaurant.get("open");
 			url = (String) restaurant.get("url");
 			businessId = (String) restaurant.get("business_id");
@@ -71,16 +76,28 @@ public class YelpDb implements MP5Db {
 			photoUrl = (String) restaurant.get("photo_url");
 			longitude = (Double) restaurant.get("longitude");
 			latitude = (Double) restaurant.get("latitude");
-			stars = (Integer) restaurant.get("stars");
-			reviewCount = (Integer) restaurant.get("review_count");
-			price = (Integer) restaurant.get("price");
-			neighborhoods = (HashSet<String>) restaurant.get("categories");
-			categories = (HashSet<String>) restaurant.get("categories");
-			schools = (HashSet<String>) restaurant.get("schools");
+			stars = (double) restaurant.get("stars");
+			reviewCount = ((Long) restaurant.get("review_count")).intValue();
+			price = ((Long) restaurant.get("price")).intValue();
+			
+			jsonArray = (JSONArray) restaurant.get("neighborhoods");
+			for(int i = 0; i < jsonArray.size(); i++){
+				neighborhoods.add(jsonArray.toString());
+			}
+			
+			jsonArray = (JSONArray) restaurant.get("categories");
+			for(int i = 0; i < jsonArray.size(); i++){
+				categories.add(jsonArray.toString());
+			}
+			
+			jsonArray = (JSONArray) restaurant.get("schools");
+			for(int i = 0; i < jsonArray.size(); i++){
+				schools.add(jsonArray.toString());
+			}
 
 			yRestaurant = new YelpRestaurant(businessId, status, url, longitude, latitude, neighborhoods, categories,
 					schools, businessId, name, state, BType, stars, city, fullAddress, reviewCount, photoUrl, price);
-			restaurants.add(yRestaurant);
+			restaurants.put(businessId,yRestaurant);
 		}
 
 	}
@@ -89,25 +106,30 @@ public class YelpDb implements MP5Db {
 		YelpReview yReview;
 		String businessId;
 		HashMap<String, Integer> votes;
+		String reviewId;
 		String text;
 		int stars;
 		String userId;
 		String date;
 
 		JSONParser parser = new JSONParser();
-		JSONArray jsonArray = (JSONArray) parser.parse(new FileReader(filePath));
-
-		for (Object o : jsonArray) {
-			JSONObject review = (JSONObject) o;
+		JSONArray jsonArray;
+		BufferedReader buffRead = new BufferedReader(new FileReader(filePath));
+		String line;
+		
+		while(!((line = buffRead.readLine()) == null)){
+		//for (Object o : jsonArray) {
+			JSONObject review = (JSONObject) parser.parse(line);
 			businessId = (String) review.get("business_id");
 			votes = (HashMap<String, Integer>) review.get("votes");
+			reviewId = (String) review.get("review_id");
 			text = (String) review.get("text");
-			stars = (Integer) review.get("stars");
+			stars = ((Long) review.get("stars")).intValue();
 			userId = (String) review.get("user_id");
 			date = (String) review.get("date");
 
-			yReview = new YelpReview(businessId, businessId, votes, text, stars, userId, date);
-			reviews.add(yReview);
+			yReview = new YelpReview(reviewId, businessId, votes, text, stars, userId, date);
+			reviews.put(reviewId,yReview);
 		}
 	}
 
@@ -117,24 +139,39 @@ public class YelpDb implements MP5Db {
 		HashMap<String, Integer> votes;
 		int reviewCount;
 		String name;
-		int averageStars;
+		double averageStars;
 		String userId;
 		
 		JSONParser parser = new JSONParser();
-		JSONArray jsonArray = (JSONArray) parser.parse(new FileReader(filePath));
-
-		for (Object o : jsonArray) {
-			JSONObject user = (JSONObject) o;
+		JSONArray jsonArray;
+		BufferedReader buffRead = new BufferedReader(new FileReader(filePath));
+		String line;
+		
+		while(!((line = buffRead.readLine()) == null)){
+		//for (Object o : jsonArray) {
+			JSONObject user = (JSONObject) parser.parse(line);
 			url = (String) user.get("url");
 			votes = (HashMap<String, Integer>) user.get("votes");
-			reviewCount = (Integer) user.get("review_count");
-			averageStars = (Integer) user.get("average_stars");
+			reviewCount = ((Long) user.get("review_count")).intValue();
+			averageStars = (double) user.get("average_stars");
 			name = (String) user.get("name");
 			userId = (String) user.get("user_id");
 			
 			yUser = new YelpUser(userId, url, votes, reviewCount, name, averageStars);
-			users.add(yUser);
+			users.put(userId,yUser);
 		}
+	}
+	
+	public void addRestaurant (YelpRestaurant restaurant){
+		restaurants.put(restaurant.getId(), restaurant);
+	}
+	
+	public void addUser (YelpUser user){
+		users.put(user.getId(), user);
+	}
+	
+	public void addReview (YelpReview review){
+		reviews.put(review.getId(), review);
 	}
 
 	@Override
@@ -154,5 +191,4 @@ public class YelpDb implements MP5Db {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }

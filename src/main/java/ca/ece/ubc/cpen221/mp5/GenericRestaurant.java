@@ -14,7 +14,7 @@ public class GenericRestaurant extends GenericObject{
 	protected final String name;
 	protected final String state;
 	protected final String BType;
-	protected final int stars;
+	protected final double stars;
 	protected final String city;
 	protected final String fullAddress;
 	protected final int reviewCount;
@@ -23,7 +23,7 @@ public class GenericRestaurant extends GenericObject{
 	
 	public GenericRestaurant(String id, boolean status, String url, double longitude, double latitude,
 							 HashSet<String> neighborhoods, HashSet<String> categories, HashSet<String> schools,
-							 String businessId, String name, String state, String BType, int stars, String city,
+							 String businessId, String name, String state, String BType, double stars2, String city,
 							 String fullAddress, int reviewCount, String photoUrl, int price) {
 		super(id, "restaurant");
 		this.status = status;
@@ -37,7 +37,7 @@ public class GenericRestaurant extends GenericObject{
 		this.name = name;
 		this.state = state;
 		this.BType = BType;
-		this.stars = stars;
+		this.stars = stars2;
 		this.city = city;
 		this.fullAddress = fullAddress;
 		this.reviewCount = reviewCount;
@@ -65,7 +65,7 @@ public class GenericRestaurant extends GenericObject{
 	public String getBType() {
 		return this.BType;
 	}
-	public int getStars() {
+	public double getStars() {
 		return this.stars;
 	}
 	public String getCity() {
