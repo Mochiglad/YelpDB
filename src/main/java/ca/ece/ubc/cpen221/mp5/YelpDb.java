@@ -238,14 +238,17 @@ public class YelpDb implements MP5Db {
 		boolean changed = true;
 		int numPoints = restaurantList.size();
 		
-		//while(changed){
+		while(changed){
+			for(int i = 0; i < k; i++){
+				pointSet.get(i).clear();
+			}
 			changed = false;
 			for(int i = 0; i < numPoints; i++){
-				Integer closest = -100;
-				double shortestDist = 0;
+				Integer closest = 0;
+				double shortestDist = distance(centers.get(0),points.get(i));
 				for(int j = 0; j < centers.size(); j++){
 					double distance = distance(centers.get(j),points.get(i));
-					if(distance > shortestDist){
+					if(distance < shortestDist){
 						shortestDist = distance;
 						closest = j;
 					}
@@ -256,13 +259,13 @@ public class YelpDb implements MP5Db {
 			for(int i = 0; i < pointSet.size(); i++){
 				Double[] newCenter = newCenter(points,pointSet.get(i));
 				
-				if(newCenter[0] != centers.get(i)[0] && newCenter[1] != centers.get(i)[1]){
+				if(newCenter[0].doubleValue() != centers.get(i)[0].doubleValue() && newCenter[1].doubleValue() != centers.get(i)[1].doubleValue()){
 					centers.remove(i);
 					centers.add(i,newCenter);
 					changed = true;
 				}
 			}
-		//}
+		}
 		
 		ArrayList<Set<YelpRestaurant>> restaurantSet = new ArrayList<Set<YelpRestaurant>>();
 		for(int i = 0; i < pointSet.size(); i++){
@@ -323,6 +326,6 @@ public class YelpDb implements MP5Db {
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 	    YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    db.kMeansClusters_json(5);
+	    db.kMeansClusters_json(3);
 	}
 }
