@@ -10,6 +10,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Random;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -182,13 +184,148 @@ public class YelpDb implements MP5Db {
 
 	@Override
 	public String kMeansClusters_json(int k) {
-		// TODO Auto-generated method stub
-		return null;
+		double X_LOWER_BOUND = 0;
+		double X_UPPER_BOUND = 0;
+		double Y_LOWER_BOUND = 0;
+		double Y_UPPER_BOUND = 0;
+		ArrayList<YelpRestaurant> restaurantList = new ArrayList<YelpRestaurant>(restaurants.values());
+		HashMap<Integer,Double[]> points = new HashMap<Integer,Double[]>();
+		ArrayList<Double[]> centers = new ArrayList<Double[]>();
+		ArrayList<Set<Integer>> pointSet = new ArrayList<Set<Integer>>();
+		
+		//initialize pointSet
+		for(int i = 0; i < k; i++){
+			pointSet.add(new HashSet<Integer>());
+		}
+		
+		for(int i = 0; i < restaurantList.size(); i++){
+			YelpRestaurant temp = restaurantList.get(i);
+			points.put(i,new Double[]{temp.getLongitude(),temp.getLatitude()});
+			if(i == 0){
+				X_LOWER_BOUND = temp.getLongitude();
+				X_UPPER_BOUND = temp.getLongitude();
+				Y_LOWER_BOUND = temp.getLatitude();
+				Y_UPPER_BOUND = temp.getLatitude();
+			}
+			if(X_LOWER_BOUND > temp.getLongitude()){
+				X_LOWER_BOUND = temp.getLongitude();
+			} else if(X_UPPER_BOUND < temp.getLongitude()){
+				X_UPPER_BOUND = temp.getLongitude();
+			}
+			if(Y_LOWER_BOUND > temp.getLatitude()){
+				Y_LOWER_BOUND = temp.getLatitude();
+			} else if(Y_UPPER_BOUND < temp.getLatitude()){
+				Y_UPPER_BOUND = temp.getLatitude();
+			}
+		}
+		double X_RANGE = X_UPPER_BOUND - X_LOWER_BOUND;
+		double Y_RANGE = Y_UPPER_BOUND - Y_LOWER_BOUND;
+		
+		Random r = new Random();
+		for(int i = 0; i < k; i++){
+			Double[] randomCenter = {r.nextDouble()*X_RANGE+X_LOWER_BOUND,r.nextDouble()*Y_RANGE+Y_LOWER_BOUND};
+			if(!centers.contains(randomCenter)){
+				centers.add(randomCenter);
+			} else {
+				i--;
+			}
+		}
+		
+		for(int i = 0; i < k; i++){
+			System.out.println(centers.get(i)[0] + ", " + centers.get(i)[1]);
+		}
+		
+		boolean changed = true;
+		int numPoints = restaurantList.size();
+		
+		while(changed){
+			for(int i = 0; i < k; i++){
+				pointSet.get(i).clear();
+			}
+			changed = false;
+			for(int i = 0; i < numPoints; i++){
+				Integer closest = 0;
+				double shortestDist = distance(centers.get(0),points.get(i));
+				for(int j = 0; j < centers.size(); j++){
+					double distance = distance(centers.get(j),points.get(i));
+					if(distance < shortestDist){
+						shortestDist = distance;
+						closest = j;
+					}
+				}
+				pointSet.get(closest).add(i);
+			}
+			
+			for(int i = 0; i < pointSet.size(); i++){
+				Double[] newCenter = newCenter(points,pointSet.get(i));
+				
+				if(newCenter[0].doubleValue() != centers.get(i)[0].doubleValue() && newCenter[1].doubleValue() != centers.get(i)[1].doubleValue()){
+					centers.remove(i);
+					centers.add(i,newCenter);
+					changed = true;
+				}
+			}
+		}
+		
+		ArrayList<Set<YelpRestaurant>> restaurantSet = new ArrayList<Set<YelpRestaurant>>();
+		for(int i = 0; i < pointSet.size(); i++){
+			Iterator iterator = pointSet.get(i).iterator();
+			Set<YelpRestaurant> thisCluster = new HashSet<YelpRestaurant>();
+			while(iterator.hasNext()){
+				thisCluster.add(restaurantList.get((int) iterator.next()));
+			}
+			restaurantSet.add(thisCluster);
+		}
+		System.out.println(listSetToJson(restaurantSet));
+		return listSetToJson(restaurantSet);
+	}
+	
+	private double distance(Double[] center, Double[] point){
+		return Math.sqrt(Math.pow(center[0] - point[0],2) + Math.pow(center[1] - point[1], 2));
+	}
+	
+	private Double[] newCenter(HashMap<Integer,Double[]> Allpoints,Set<Integer> pointSet){
+		double xAvg = 0;
+		double yAvg = 0;
+		Double[] pointHolder;
+
+		Iterator<Integer> pointIterator = pointSet.iterator();
+		while(pointIterator.hasNext()){
+			Integer restaurant = pointIterator.next();
+			pointHolder = Allpoints.get(restaurant);
+			xAvg += pointHolder[0];
+			yAvg += pointHolder[1];
+		}
+		
+		xAvg = xAvg/pointSet.size();
+		yAvg = yAvg/pointSet.size();
+		return new Double[]{xAvg,yAvg};
+	}
+	
+	private String listSetToJson(ArrayList<Set<YelpRestaurant>> restaurantSet){
+		String jsonFormat = "[";
+		for(int i = 0; i < restaurantSet.size(); i++){
+			Iterator iterator = restaurantSet.get(i).iterator();
+			
+			while(iterator.hasNext()){
+				YelpRestaurant rest = (YelpRestaurant) iterator.next();
+				jsonFormat += "{\"x\": " + rest.getLongitude() + ", \"y\": " + rest.getLatitude() +
+						", \"name\": " + rest.getName() + ", \"cluster\": " + i + ", \"weight\": 1.0}, ";
+			}
+		}
+		jsonFormat = jsonFormat.substring(0, jsonFormat.length()-2);
+		jsonFormat += "]";
+		return jsonFormat;
 	}
 
 	@Override
 	public ToDoubleBiFunction getPredictorFunction(String user) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
+	    YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
+	    db.kMeansClusters_json(3);
 	}
 }
