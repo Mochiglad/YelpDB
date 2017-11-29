@@ -98,4 +98,5 @@ public class GenericRestaurant extends GenericObject{
 	public HashSet<String> getSchools() {
 		return new HashSet<String>(this.schools);
 	}
+	
 }

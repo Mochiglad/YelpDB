@@ -12,4 +12,17 @@ public class YelpRestaurant extends GenericRestaurant{
 				city, fullAddress, reviewCount, photoUrl, price);
 	}
 	
+	public String toJson() {
+		String output = "{\"open\": " + status + ", \"url\": " + "\"" + url + "\""+ ", \"longitude\": " + longitude + 
+				", \"neighborhoods\": " + neighborhoods + ", \"business_id\": " + id + ", \"name\": " +  "\"" + name + "\""
+				+ ", \"categories\": " + categories + ", \"state\": " + "\"" + state + "\"" + ", \"type\": " + "\"" + BType + "\""
+				+ ", \"city\": " + "\"" + city + "\"" + ", \"full_address\": " + "\"" + fullAddress + "\"" + ", \"longitude\": " + longitude
+				+ ", \"review_count\": " + reviewCount + ", \"photo_url\": " + "\"" + photoUrl + "\"" + ", \"schools\": " + schools
+				+ ", \"latitude\": " + latitude + ", \"price\": " + price + "}";
+		output = output.replaceAll("\n", "\\\\n");
+		output = output.replaceAll("\\[\\[", "\\[");
+		output = output.replaceAll("\\]\\]", "\\]");
+		
+		return output;
+	}
 }
