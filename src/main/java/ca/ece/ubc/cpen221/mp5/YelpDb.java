@@ -5,11 +5,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.ToDoubleBiFunction;
+import java.util.stream.Collectors;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 
 import org.json.simple.JSONArray;
@@ -22,7 +24,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 
-public class YelpDb implements MP5Db {
+public class YelpDb implements MP5Db<YelpRestaurant> {
 	private HashMap<String,YelpUser> users = new HashMap<String,YelpUser>();
 	private HashMap<String,YelpReview> reviews = new HashMap<String,YelpReview>();;
 	private HashMap<String,YelpRestaurant> restaurants = new HashMap<String,YelpRestaurant>();;
@@ -175,6 +177,18 @@ public class YelpDb implements MP5Db {
 	public void addReview (YelpReview review){
 		reviews.put(review.getId(), review);
 	}
+	
+	public Map<String,YelpRestaurant> getRestaurants(){
+		return restaurants;
+	}
+	
+	public Map<String,YelpReview> getReviews(){
+		return reviews;
+	}
+	
+	public Map<String,YelpUser> getUsers(){
+		return users;
+	}
 
 	@Override
 	public Set getMatches(String queryString) {
@@ -183,7 +197,8 @@ public class YelpDb implements MP5Db {
 	}
 
 	@Override
-	public String kMeansClusters_json(int k) {
+	public String kMeansClusters_json(int k) throws IllegalArgumentException {
+		int check = 0;
 		double X_LOWER_BOUND = 0;
 		double X_UPPER_BOUND = 0;
 		double Y_LOWER_BOUND = 0;
@@ -222,17 +237,15 @@ public class YelpDb implements MP5Db {
 		double Y_RANGE = Y_UPPER_BOUND - Y_LOWER_BOUND;
 		
 		Random r = new Random();
+		int a = 0;
 		for(int i = 0; i < k; i++){
-			Double[] randomCenter = {r.nextDouble()*X_RANGE+X_LOWER_BOUND,r.nextDouble()*Y_RANGE+Y_LOWER_BOUND};
-			if(!centers.contains(randomCenter)){
-				centers.add(randomCenter);
+			Double[] Center = new Double[]{restaurantList.get(a).getLongitude(),restaurantList.get(a).getLatitude()};
+			if(!centers.contains(Center)){
+				centers.add(Center);
 			} else {
 				i--;
 			}
-		}
-		
-		for(int i = 0; i < k; i++){
-			System.out.println(centers.get(i)[0] + ", " + centers.get(i)[1]);
+			a++;
 		}
 		
 		boolean changed = true;
@@ -265,6 +278,20 @@ public class YelpDb implements MP5Db {
 					changed = true;
 				}
 			}
+			
+			boolean hasEmpty = false;
+			for(int i = 0; i < pointSet.size(); i++){
+				if(pointSet.get(i).isEmpty()){
+					hasEmpty = true;
+					centers.add(i,new Double[]{r.nextDouble()*X_RANGE+X_LOWER_BOUND,r.nextDouble()*Y_RANGE+Y_LOWER_BOUND});
+					centers.remove(i+1);
+				}
+			}
+			if(hasEmpty)
+				check++;
+			if(check == 300000){
+				throw new IllegalArgumentException("not enough unique data points to cluster into "+k+" clusters");
+			}
 		}
 		
 		ArrayList<Set<YelpRestaurant>> restaurantSet = new ArrayList<Set<YelpRestaurant>>();
@@ -281,7 +308,7 @@ public class YelpDb implements MP5Db {
 	}
 	
 	private double distance(Double[] center, Double[] point){
-		return Math.sqrt(Math.pow(center[0] - point[0],2) + Math.pow(center[1] - point[1], 2));
+		return Math.pow(center[0].doubleValue() - point[0].doubleValue(),2) + Math.pow(center[1].doubleValue() - point[1].doubleValue(), 2);
 	}
 	
 	private Double[] newCenter(HashMap<Integer,Double[]> Allpoints,Set<Integer> pointSet){
@@ -310,7 +337,7 @@ public class YelpDb implements MP5Db {
 			while(iterator.hasNext()){
 				YelpRestaurant rest = (YelpRestaurant) iterator.next();
 				jsonFormat += "{\"x\": " + rest.getLongitude() + ", \"y\": " + rest.getLatitude() +
-						", \"name\": " + rest.getName() + ", \"cluster\": " + i + ", \"weight\": 1.0}, ";
+						", \"name\": \"" + rest.getName() + "\" , \"cluster\": " + i + ", \"weight\": 1.0}, ";
 			}
 		}
 		jsonFormat = jsonFormat.substring(0, jsonFormat.length()-2);
@@ -320,12 +347,13 @@ public class YelpDb implements MP5Db {
 
 	@Override
 	public ToDoubleBiFunction getPredictorFunction(String user) {
-		// TODO Auto-generated method stub
-		return null;
+		ToDoubleBiFunction<String,MP5Db> predictFromPrice = (x,y) -> Prediction.predict(x,y,user);
+		return predictFromPrice;
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 	    YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    db.kMeansClusters_json(3);
+	    ToDoubleBiFunction p = db.getPredictorFunction("Vp14grGEIvYzmrsOdix4UQ");
+	    System.out.println(p.applyAsDouble("2ciUQ05DREauhBC3xiA4qw", db));
 	}
 }

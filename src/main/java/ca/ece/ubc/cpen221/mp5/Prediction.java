@@ -1,0 +1,54 @@
+package ca.ece.ubc.cpen221.mp5;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.ToDoubleBiFunction;
+import java.util.stream.Collectors;
+
+public class Prediction{
+	
+	public static double predict(String businessID,MP5Db database,String userID){
+		HashMap<String,YelpReview> reviews = (HashMap<String, YelpReview>) ((YelpDb)database).getReviews();
+		HashMap<String,YelpRestaurant> restaurants = (HashMap<String, YelpRestaurant>) ((YelpDb)database).getRestaurants();
+		
+		List<YelpReview> relevantReviews = reviews.values().stream()
+				.filter(review-> review.getUserId().equals(userID)).collect(Collectors.toList());
+		List<YelpRestaurant> relevantRestaurant = restaurants.values().stream()
+				.filter(rest -> relevantReviews.stream().map(review -> review.getBusinessId())
+						.collect(Collectors.toList()).contains(rest.getId())).collect(Collectors.toList());
+		List<Double[]> points = new ArrayList<Double[]>();
+		double xMean = 0;
+		double yMean = 0;
+		
+		for(YelpReview r : relevantReviews){
+			YelpRestaurant rest = restaurants.get(r.getBusinessId());
+			double x = rest.getPrice();
+			double y = r.getStars();
+			points.add(new Double[]{x,y});
+		}
+		
+		for(Double[] point : points){
+			xMean += point[0];
+			yMean += point[1];
+		}
+		xMean = xMean/points.size();
+		yMean = yMean/points.size();
+		
+		double Sxx = 0;
+		double Syy = 0;
+		double Sxy = 0;
+		for(Double[] point : points){
+			double x = point[0];
+			double y = point[1];
+			Sxx += Math.pow(x-xMean, 2);
+			Syy += Math.pow(y-yMean, 2);
+			Sxy += (x-xMean)*(y-yMean);
+		}
+		
+		double b = Sxy/Sxx;
+		double a = yMean - b*xMean;
+		
+		return b*restaurants.get(businessID).getPrice()+a;
+	}
+}
