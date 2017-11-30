@@ -11,7 +11,6 @@ public class GenericUser extends GenericObject{
 	public GenericUser(String id, String url, HashMap<String, Integer> votes, int reviewCount, String name,
 					   double averageStars2) {
 		super(id, "user");
-		this.id = id;
 		this.url = url;
 		this.votes = votes;
 		this.reviewCount = reviewCount;

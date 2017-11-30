@@ -27,7 +27,7 @@ public class YelpDBServer {
 			throw new InvalidPortException();
 		}
 		//port = Integer.parseInt(args[0]);
-		port = 4950;
+		port = 4949;
 		if(port > 65535 || port < 0) {
 			throw new InvalidPortException();
 		}

@@ -46,6 +46,10 @@ public class Prediction{
 			Sxy += (x-xMean)*(y-yMean);
 		}
 		
+		if(Sxx == 0 || Sxy == 0){
+			throw new IllegalArgumentException("not enough distinct data points");
+		}
+		
 		double b = Sxy/Sxx;
 		double a = yMean - b*xMean;
 		
