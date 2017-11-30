@@ -2,6 +2,8 @@ package ca.ece.ubc.cpen221.mp5;
 
 import java.util.HashSet;
 
+import org.json.simple.JSONObject;
+
 public class YelpRestaurant extends GenericRestaurant{
 
 	public YelpRestaurant(String id, boolean status, String url, double longitude, double latitude,
@@ -14,9 +16,9 @@ public class YelpRestaurant extends GenericRestaurant{
 	
 	public String toJson() {
 		String output = "{\"open\": " + status + ", \"url\": " + "\"" + url + "\""+ ", \"longitude\": " + longitude + 
-				", \"neighborhoods\": " + neighborhoods + ", \"business_id\": " + id + ", \"name\": " +  "\"" + name + "\""
+				", \"neighborhoods\": " + neighborhoods + ", \"business_id\": " + "\"" + id + "\"" + ", \"name\": " +  "\"" + name + "\""
 				+ ", \"categories\": " + categories + ", \"state\": " + "\"" + state + "\"" + ", \"type\": " + "\"" + BType + "\""
-				+ ", \"city\": " + "\"" + city + "\"" + ", \"full_address\": " + "\"" + fullAddress + "\"" + ", \"longitude\": " + longitude
+				+ ", \"stars\": " + "\"" + stars + "\"" + ", \"city\": " + "\"" + city + "\"" + ", \"full_address\": " + "\"" + fullAddress + "\"" + ", \"longitude\": " + longitude
 				+ ", \"review_count\": " + reviewCount + ", \"photo_url\": " + "\"" + photoUrl + "\"" + ", \"schools\": " + schools
 				+ ", \"latitude\": " + latitude + ", \"price\": " + price + "}";
 		output = output.replaceAll("\n", "\\\\n");
@@ -25,4 +27,5 @@ public class YelpRestaurant extends GenericRestaurant{
 		
 		return output;
 	}
+
 }
