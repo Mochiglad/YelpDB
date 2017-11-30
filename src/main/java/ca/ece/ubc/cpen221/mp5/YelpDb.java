@@ -356,7 +356,7 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 	    YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    ToDoubleBiFunction p = db.getPredictorFunction("Vp14grGEIvYzmrsOdix4UQ");
-	    System.out.println(p.applyAsDouble("2ciUQ05DREauhBC3xiA4qw", db));
+	    ToDoubleBiFunction p = db.getPredictorFunction("fL8ujZ89qTyhbjr1Qz5aSg");
+	    System.out.println(p.applyAsDouble("P2XKcDLVHUuOdGNBQtMFRQ", db));
 	}
 }

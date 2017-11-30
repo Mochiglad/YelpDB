@@ -22,10 +22,12 @@ public class QueryParser {
 	Map<String,YelpRestaurant> restaurants;
 	
 	public QueryParser(String query,YelpDb data){
-		String valid = query.replaceAll("((^|[ \\(])in\\(.*?\\))|((^|[ \\(])name\\(.*?\\))|((^|[ \\(])"
-				+ "category\\(.*?\\))|((^|[ \\(])rating [=><]=? \\d)|((^|[ \\(])(price [=><]=? \\d))","");
+		query = clean(query);
 		
-		if(valid.matches("(^|[\\( ]).*?\\(.*")){
+		String valid = query.replaceAll("((^|[ \\(])in\\(.*?\\))|((^|[ \\(])name\\(.*?\\))|((^|[ \\(])"
+				+ "category\\(.*?\\))|((^|[ \\(])rating [=><]=? \\d)|((^|[ \\(])(price [=><]=? \\d))"," ");
+		
+		if(valid.matches("(^| )[^ ]+\\(")||query.matches(".*?[&\\|]{2,} *[&\\|]+.*?")){
 			throw new IllegalArgumentException("query not valid");
 		}
 		
@@ -66,7 +68,7 @@ public class QueryParser {
 		}
 		
 		for(int i = 0; i < restaurantList.size();i++){
-			System.out.println(restaurantList.get(i).getName());
+			System.out.println(restaurantList.get(i).toJson());
 		}
 		return restaurantList;
 	}
@@ -108,8 +110,6 @@ public class QueryParser {
 	}
 	
 	private ArrayList<YelpRestaurant> filter (String s,ArrayList<YelpRestaurant> restList) {
-		//ArrayList<YelpRestaurant> restList = new ArrayList<YelpRestaurant>(restaurantList);
-		//Stream<YelpRestaurant> stream = restList.stream();
 		s = s.trim();
 		if(s.contains("in(")){
 			String nbh = s.substring(4,s.length()-2);
@@ -167,9 +167,20 @@ public class QueryParser {
 		return new ArrayList<YelpRestaurant>(combine);
 	}
 	
+	private synchronized String clean(String query){
+		String americanNew = "American (New)";
+		query = query.trim();
+		query = query.replaceAll(" {2,}", " ");
+		query = query.replaceAll("\\( +", "\\(");
+		query = query.replace(americanNew, "ThisisAPLaceHOlderANdNOoneINTHeirRIGHtmINDWOulDtypEthiF");
+		query = query.replaceAll("\\(+(.*?\\(.*?\\))\\)+", "$1");
+		query = query.replace("ThisisAPLaceHOlderANdNOoneINTHeirRIGHtmINDWOulDtypEthiF", americanNew);
+		return query;
+	}
+	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    QueryParser p = new QueryParser("name(Taqueria Reyes) || (in(Telegraph Ave) && category(Korean)) && price = 2",db);
+	    QueryParser p = new QueryParser("in(Downtown Berkeley) && category(American (New))",db);
 	    p.findRestaurant();
 	}
 	
