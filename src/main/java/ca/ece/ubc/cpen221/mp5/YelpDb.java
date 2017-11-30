@@ -43,31 +43,32 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		 * photoUrl, price
 		 */
 		YelpRestaurant yRestaurant;
-		boolean status;
-		String url;
-		double longitude;
-		double latitude;
-		HashSet<String> neighborhoods = new HashSet<String>();
-		HashSet<String> categories = new HashSet<String>();
-		HashSet<String> schools = new HashSet<String>();
-		String businessId;
-		String name;
-		String state;
-		String BType;
-		double stars;
-		String city;
-		String fullAddress;
-		int reviewCount;
-		String photoUrl;
-		int price;
 
 		JSONParser parser = new JSONParser();
-		JSONArray jsonArray;
+		JSONArray jsonArray = new JSONArray();
 		BufferedReader buffRead = new BufferedReader(new FileReader(filePath));
 		String line;
 		
 		while(!((line = buffRead.readLine()) == null)){
 		//for (Object o : jsonArray) {
+			boolean status;
+			String url;
+			double longitude;
+			double latitude;
+			HashSet<String> neighborhoods = new HashSet<String>();
+			HashSet<String> categories = new HashSet<String>();
+			HashSet<String> schools = new HashSet<String>();
+			String businessId;
+			String name;
+			String state;
+			String BType;
+			double stars;
+			String city;
+			String fullAddress;
+			int reviewCount;
+			String photoUrl;
+			int price;
+			
 			JSONObject restaurant = (JSONObject) parser.parse(line);
 			status = (boolean) restaurant.get("open");
 			url = (String) restaurant.get("url");
@@ -86,35 +87,28 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 			
 			jsonArray = (JSONArray) restaurant.get("neighborhoods");
 			for(int i = 0; i < jsonArray.size(); i++){
-				neighborhoods.add(jsonArray.toString());
+				neighborhoods.add(jsonArray.get(i).toString());
 			}
 			
 			jsonArray = (JSONArray) restaurant.get("categories");
 			for(int i = 0; i < jsonArray.size(); i++){
-				categories.add(jsonArray.toString());
+				categories.add(jsonArray.get(i).toString());
 			}
 			
 			jsonArray = (JSONArray) restaurant.get("schools");
 			for(int i = 0; i < jsonArray.size(); i++){
-				schools.add(jsonArray.toString());
+				schools.add(jsonArray.get(i).toString());
 			}
 
 			yRestaurant = new YelpRestaurant(businessId, status, url, longitude, latitude, neighborhoods, categories,
 					schools, businessId, name, state, BType, stars, city, fullAddress, reviewCount, photoUrl, price);
 			restaurants.put(businessId,yRestaurant);
 		}
-
+		buffRead.close();
 	}
 
 	private void readReviewJson(String filePath) throws FileNotFoundException, IOException, ParseException {
 		YelpReview yReview;
-		String businessId;
-		HashMap<String, Integer> votes;
-		String reviewId;
-		String text;
-		int stars;
-		String userId;
-		String date;
 
 		JSONParser parser = new JSONParser();
 		JSONArray jsonArray;
@@ -123,6 +117,14 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		
 		while(!((line = buffRead.readLine()) == null)){
 		//for (Object o : jsonArray) {
+			String businessId;
+			HashMap<String, Integer> votes;
+			String reviewId;
+			String text;
+			int stars;
+			String userId;
+			String date;
+			
 			JSONObject review = (JSONObject) parser.parse(line);
 			businessId = (String) review.get("business_id");
 			votes = (HashMap<String, Integer>) review.get("votes");
@@ -139,12 +141,6 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 
 	private void readUserJson(String filePath) throws FileNotFoundException, IOException, ParseException {
 		YelpUser yUser;
-		String url;
-		HashMap<String, Integer> votes;
-		int reviewCount;
-		String name;
-		double averageStars;
-		String userId;
 		
 		JSONParser parser = new JSONParser();
 		JSONArray jsonArray;
@@ -153,6 +149,13 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		
 		while(!((line = buffRead.readLine()) == null)){
 		//for (Object o : jsonArray) {
+			String url;
+			HashMap<String, Integer> votes;
+			int reviewCount;
+			String name;
+			double averageStars;
+			String userId;
+			
 			JSONObject user = (JSONObject) parser.parse(line);
 			url = (String) user.get("url");
 			votes = (HashMap<String, Integer>) user.get("votes");

@@ -77,7 +77,7 @@ public class FibonacciClient {
      */
     public static void main(String[] args) {
         try {
-            FibonacciClient client = new FibonacciClient("localhost", 4950);
+            FibonacciClient client = new FibonacciClient("localhost", 4949);
             	String input = args[0] + " " + args[1];
                 client.sendRequest(input);
             
