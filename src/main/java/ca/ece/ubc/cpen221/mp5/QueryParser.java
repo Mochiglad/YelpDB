@@ -96,7 +96,7 @@ public class QueryParser {
 					if((token.startsWith("in")||token.startsWith("category")||token.startsWith("rating")
 							||token.startsWith("price")||token.startsWith("name")
 							||token.startsWith("(")||token.matches("^\\d+.*"))&&(token.contains("||")||token.contains("&&"))){
-						//System.out.println(a + ": " + token);
+						System.out.println(a + ": " + token);
 						atoms.add(a-10,token);
 						query = query.replace("("+token+")", Integer.toString(a));
 						a++;
@@ -105,7 +105,7 @@ public class QueryParser {
 				}
 			}
 		}
-		//System.out.println(query);
+		System.out.println(query);
 		return atoms;
 	}
 	
@@ -169,18 +169,21 @@ public class QueryParser {
 	
 	private synchronized String clean(String query){
 		String americanNew = "American (New)";
+		String americanTrad = "American (Traditional)";
 		query = query.trim();
 		query = query.replaceAll(" {2,}", " ");
 		query = query.replaceAll("\\( +", "\\(");
-		query = query.replace(americanNew, "ThisisAPLaceHOlderANdNOoneINTHeirRIGHtmINDWOulDtypEthiF");
-		query = query.replaceAll("\\(+(.*?\\(.*?\\))\\)+", "$1");
-		query = query.replace("ThisisAPLaceHOlderANdNOoneINTHeirRIGHtmINDWOulDtypEthiF", americanNew);
+		query = query.replace(americanNew, "ThisisAPLaceHOlderANdNOoneINTHeirRIGHtmINDWOulDtypEthiN");
+		query = query.replace(americanTrad, "ThisisAPLaceHOlderANdNOoneINTHeirRIGHtmINDWOulDtypEthiT");
+		query = query.replaceAll("\\(\\(+(.*?\\(.*?\\))\\)\\)+", "($1)");
+		query = query.replace("ThisisAPLaceHOlderANdNOoneINTHeirRIGHtmINDWOulDtypEthiN", americanNew);
+		query = query.replace("ThisisAPLaceHOlderANdNOoneINTHeirRIGHtmINDWOulDtypEthiT", americanTrad);
 		return query;
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    QueryParser p = new QueryParser("in(Downtown Berkeley) && category(American (New))",db);
+	    QueryParser p = new QueryParser("in(Downtown Berkeley) || (category(Mexican) || category(Creperies))",db);
 	    p.findRestaurant();
 	}
 	
