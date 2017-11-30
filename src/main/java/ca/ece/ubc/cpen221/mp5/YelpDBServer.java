@@ -5,8 +5,11 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class YelpDBServer {
@@ -27,7 +30,7 @@ public class YelpDBServer {
 			throw new InvalidPortException();
 		}
 		//port = Integer.parseInt(args[0]);
-		port = 4949;
+		port = 4950;
 		if(port > 65535 || port < 0) {
 			throw new InvalidPortException();
 		}
@@ -77,6 +80,9 @@ public class YelpDBServer {
 					try {
 						try {
 							handle(socket);
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						} finally {
 							socket.close();
 						}
@@ -93,15 +99,16 @@ public class YelpDBServer {
 		}
 	}
 
-	/**
+	/** 
 	 * Handle one client connection. Returns when client disconnects.
 	 * 
 	 * @param socket
 	 *            socket where client is connected
 	 * @throws IOException
 	 *             if connection encounters an error
+	 * @throws ParseException 
 	 */
-	private void handle(Socket socket) throws IOException {
+	private void handle(Socket socket) throws IOException, ParseException {
 		System.err.println("client connected");
 
 		// get the socket's input stream, and wrap converters around it
@@ -130,16 +137,28 @@ public class YelpDBServer {
 		}
 	}
 
-	private void fillRequest(String request) {
+	private void fillRequest(String request) throws ParseException {
 		String [] split = request.split(" ");
 		String operation = split[0];
-		System.out.println(request);
 		String input = split[1];
 		Map<String, YelpRestaurant> restaurants = database.getRestaurants();
+		YelpRestaurant add;
 		if(operation.equals("GETRESTAURANT")) {
 			System.out.println(restaurants.get(input).toJson());
 		}
 		if(operation.equals("ADDRESTAURANT")) {
+			for(int i = 2; i < split.length - 1; i++) {
+				input += split[i] + " ";
+			}
+			System.out.println(input);
+			input += split[split.length - 1];
+
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(input);
+			add = YelpDb.restaurantParser(json, true, newId + "");
+			restaurants.put(newId + "", add);
+			System.out.println(newId + " " + (String)(restaurants.get(newId + "").getBusinessId()));
+			newId.add(BigInteger.valueOf(1));
 			System.out.println("Chose ADDRESTAURANT");
 		}
 		if(operation.equals("ADDREVIEW")) {
