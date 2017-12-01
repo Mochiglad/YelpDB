@@ -17,7 +17,9 @@ public class YelpDBServer {
 	private static int port;
 	private ServerSocket serverSocket;
 	private YelpDb database;
-	private BigInteger newId;
+	private BigInteger newIdRestaurant;
+	private BigInteger newIdReview;
+	private BigInteger newIdUser;
 	
 	
 	
@@ -60,7 +62,9 @@ public class YelpDBServer {
 	 */
 	public YelpDBServer(int port) throws IOException, ParseException {
 		database = new YelpDb("data/users.json", "data/reviews.json", "data/restaurants.json");
-		newId = BigInteger.valueOf(0);
+		newIdRestaurant = BigInteger.valueOf(0);
+		newIdReview = BigInteger.valueOf(0);
+		newIdUser = BigInteger.valueOf(0);
 		serverSocket = new ServerSocket(port);
 	}
 
@@ -142,7 +146,11 @@ public class YelpDBServer {
 		String operation = split[0];
 		String input = split[1];
 		Map<String, YelpRestaurant> restaurants = database.getRestaurants();
-		YelpRestaurant add;
+		Map<String, YelpReview> reviews = database.getReviews();
+		Map<String, YelpUser> users = database.getUsers();
+		YelpRestaurant addRestaurant;
+		YelpReview addReview;
+		YelpUser addUser;
 		if(operation.equals("GETRESTAURANT")) {
 			System.out.println(restaurants.get(input).toJson());
 		}
@@ -155,17 +163,39 @@ public class YelpDBServer {
 
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(input);
-			add = YelpDb.restaurantParser(json, true, newId + "");
-			restaurants.put(newId + "", add);
-			System.out.println(newId + " " + (String)(restaurants.get(newId + "").getBusinessId()));
-			newId.add(BigInteger.valueOf(1));
-			System.out.println("Chose ADDRESTAURANT");
+			addRestaurant = YelpDb.restaurantParser(json, true, newIdRestaurant + "");
+			restaurants.put(newIdRestaurant + "", addRestaurant);
+			System.out.println(newIdRestaurant + " " + (String)(restaurants.get(newIdRestaurant + "").getBusinessId()));
+			newIdRestaurant.add(BigInteger.valueOf(1));
+			
 		}
 		if(operation.equals("ADDREVIEW")) {
-			System.out.println("Chose ADDREVIEW");
+			for(int i = 2; i < split.length - 1; i++) {
+				input += split[i] + " ";
+			}
+			System.out.println(input);
+			input += split[split.length - 1];
+
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(input);
+			addReview = YelpDb.reviewParser(json, true, newIdReview + "");
+			reviews.put(newIdReview + "", addReview);
+			System.out.println(newIdReview + " " + (String)(reviews.get(newIdReview + "").getId()));
+			newIdReview.add(BigInteger.valueOf(1));
 		}
 		if(operation.equals("ADDUSER")) {
-			System.out.println("Chose ADDUSER");
+			for(int i = 2; i < split.length - 1; i++) {
+				input += split[i] + " ";
+			}
+			System.out.println(input);
+			input += split[split.length - 1];
+
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(input);
+			addUser = YelpDb.userParser(json, true, newIdUser + "");
+			users.put(newIdUser + "", addUser);
+			System.out.println(newIdUser + " " + (String)(users.get(newIdUser + "").getId()));
+			newIdUser.add(BigInteger.valueOf(1));
 		}
 	}
 

@@ -77,10 +77,13 @@ public class FibonacciClient {
      */
     public static void main(String[] args) {
         try {
-            FibonacciClient client = new FibonacciClient("localhost", 4949);
+            FibonacciClient client = new FibonacciClient("localhost", 4950);
             	String input = args[0] + " " + args[1];
+                for(int i = 2; i < args.length - 1; i++) {
+    				input += args[i] + " ";
+    			}
+                input += args[args.length - 1];
                 client.sendRequest(input);
-            
             client.close();
         } catch (IOException ioe) {
             ioe.printStackTrace();
