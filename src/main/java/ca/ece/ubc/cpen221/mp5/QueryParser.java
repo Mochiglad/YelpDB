@@ -23,6 +23,7 @@ public class QueryParser {
 	
 	public QueryParser(String query,YelpDb data){
 		query = clean(query);
+		checkNums(query);
 		
 		if(!query.contains("&&") && !query.contains("\\|\\|")){
 			if(query.matches("^.*?(\\)|\\d) .*?$")){
@@ -137,6 +138,8 @@ public class QueryParser {
 				restList = (ArrayList<YelpRestaurant>) restList.stream().filter(r -> r.getStars() >= rating).collect(Collectors.toList());
 			} else if(s.contains("<=")){
 				restList = (ArrayList<YelpRestaurant>) restList.stream().filter(r -> r.getStars() <= rating).collect(Collectors.toList());
+			} else if(s.contains("=")){
+				restList = (ArrayList<YelpRestaurant>) restList.stream().filter(r -> r.getStars() == rating).collect(Collectors.toList());
 			}
 		} else if(s.contains("price ")){
 			int price = Integer.parseInt(s.substring(s.length()-2,s.length()-1));
@@ -148,6 +151,8 @@ public class QueryParser {
 				restList = (ArrayList<YelpRestaurant>) restList.stream().filter(r -> r.getPrice() >= price).collect(Collectors.toList());
 			} else if(s.contains("<=")){
 				restList = (ArrayList<YelpRestaurant>) restList.stream().filter(r -> r.getPrice() <= price).collect(Collectors.toList());
+			} else if(s.contains("=")){
+				restList = (ArrayList<YelpRestaurant>) restList.stream().filter(r -> r.getPrice() == price).collect(Collectors.toList());
 			}
 		}
 		return restList;
@@ -190,9 +195,22 @@ public class QueryParser {
 		return query;
 	}
 	
+	private void checkNums(String query){
+		String numsOnly = query.replaceAll("[^\\d ]", "");
+		String[] inputNums = numsOnly.split(" +");
+		
+		for(String n : inputNums){
+			if(n.matches("[\\d]+")){
+				if(Integer.parseInt(n) > 5 || Integer.parseInt(n) < 1){
+					throw new IllegalArgumentException ("query not valid");
+				}
+			}
+		}
+	}
+	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    QueryParser p = new QueryParser("(((in(Downtown Berkeley))))",db);
+	    QueryParser p = new QueryParser("rating = 1",db);
 	    p.findRestaurant();
 	}
 	
