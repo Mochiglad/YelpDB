@@ -127,7 +127,7 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		YelpReview yReview;
 		String businessId;
 		HashMap<String, Integer> votes = new HashMap<String, Integer>();
-		String reviewId;
+		String reviewId = newId;
 		String text;
 		int stars = 0;
 		String userId;
@@ -141,9 +141,10 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		if(!newReview) {
 			stars = ((Long) review.get("stars")).intValue();
 			votes = (HashMap<String, Integer>) review.get("votes");
+			reviewId = (String) review.get("review_id");
 		}
 		businessId = (String) review.get("business_id");
-		reviewId = (String) review.get("review_id");
+		
 		text = (String) review.get("text");
 		
 		userId = (String) review.get("user_id");

@@ -180,7 +180,7 @@ public class YelpDBServer {
 			JSONObject json = (JSONObject) parser.parse(input);
 			addReview = YelpDb.reviewParser(json, true, newIdReview + "");
 			reviews.put(newIdReview + "", addReview);
-			System.out.println(newIdReview + " " + (String)(reviews.get(newIdReview + "").getId()));
+			System.out.println(reviews.get(newIdReview + "").getId() + " " + reviews.get(newIdReview + "").getText());
 			newIdReview.add(BigInteger.valueOf(1));
 		}
 		if(operation.equals("ADDUSER")) {
