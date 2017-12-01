@@ -85,17 +85,17 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		
 		jsonArray = (JSONArray) restaurant.get("neighborhoods");
 		for(int i = 0; i < jsonArray.size(); i++){
-			neighborhoods.add(jsonArray.toString());
+			neighborhoods.add(jsonArray.get(i).toString());
 		}
 		
 		jsonArray = (JSONArray) restaurant.get("categories");
 		for(int i = 0; i < jsonArray.size(); i++){
-			categories.add(jsonArray.toString());
+			categories.add(jsonArray.get(i).toString());
 		}
 		
 		jsonArray = (JSONArray) restaurant.get("schools");
 		for(int i = 0; i < jsonArray.size(); i++){
-			schools.add(jsonArray.toString());
+			schools.add(jsonArray.get(i).toString());
 		}
 		
 		neighborhoodsCopy = new HashSet<String>(neighborhoods);
@@ -211,8 +211,8 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 
 	@Override
 	public Set getMatches(String queryString) {
-		// TODO Auto-generated method stub
-		return null;
+		QueryParser qp = new QueryParser(queryString,this);
+		return qp.findRestaurant();
 	}
 
 	@Override

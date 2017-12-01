@@ -41,7 +41,7 @@ public class QueryParser {
 		restaurants = data.getRestaurants();
 	}
 	
-	public ArrayList<YelpRestaurant> findRestaurant(){
+	public HashSet<YelpRestaurant> findRestaurant(){
 		ArrayList<String> atoms = parse();
 		ArrayList<String[]> ands = new ArrayList<String[]>();
 		ArrayList<YelpRestaurant> restaurantList = new ArrayList<YelpRestaurant>(restaurants.values());
@@ -70,7 +70,7 @@ public class QueryParser {
 		for(int i = 0; i < restaurantList.size();i++){
 			System.out.println(restaurantList.get(i).toJson());
 		}
-		return restaurantList;
+		return new HashSet<YelpRestaurant>(restaurantList);
 	}
 	
 	public ArrayList<String> parse(){
@@ -143,8 +143,6 @@ public class QueryParser {
 				restList = (ArrayList<YelpRestaurant>) restList.stream().filter(r -> r.getPrice() <= price).collect(Collectors.toList());
 			}
 		}
-
-		int i = 0;
 		return restList;
 	}
 	
@@ -183,7 +181,7 @@ public class QueryParser {
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    QueryParser p = new QueryParser("(category(Mexican) && price >= 3)",db);
+	    QueryParser p = new QueryParser("(name(Momo Masala) && price >= 3)",db);
 	    p.findRestaurant();
 	}
 	
