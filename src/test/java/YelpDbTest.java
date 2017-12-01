@@ -29,6 +29,14 @@ public class YelpDbTest {
 	}
 	
 	@Test
+	public void test2andaHalf() throws FileNotFoundException, IOException, ParseException{
+		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
+	    ToDoubleBiFunction p = db.getPredictorFunction("fL8ujZ89qTyhbjr1Qz5aSg");
+	    double x = p.applyAsDouble("6QZR4ToHKlse0yhqpU5ijg", db);
+	    assert(1.0 == x);
+	}
+	
+	@Test
 	public void test3() throws FileNotFoundException, IOException, ParseException{
 		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
 		Set<YelpRestaurant> restSet = db.getMatches("category(Mexican) && in(Telegraph Ave)");

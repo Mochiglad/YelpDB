@@ -54,6 +54,13 @@ public class Prediction{
 		double b = Sxy/Sxx;
 		double a = yMean - b*xMean;
 		
-		return b*pRestaurants.get(businessID).getPrice()+a;
+		double ans = b*pRestaurants.get(businessID).getPrice()+a;
+		if(ans < 1){
+			ans = 1;
+		} else if(ans > 5){
+			ans = 5;
+		}
+		
+		return ans;
 	}
 }

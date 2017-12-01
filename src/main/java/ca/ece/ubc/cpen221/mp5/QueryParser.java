@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import org.json.simple.parser.ParseException;
 
+import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 
 public class QueryParser {
 	
@@ -22,6 +23,13 @@ public class QueryParser {
 	
 	public QueryParser(String query,YelpDb data){
 		query = clean(query);
+		
+		if(!query.contains("&&") && !query.contains("\\|\\|")){
+			if(query.matches("^.*?(\\)|\\d) .*?$")){
+				throw new IllegalArgumentException("query not valid");
+			}
+			query = query + " &&";
+		}
 		
 		String valid = query.replaceAll("((^|[ \\(])in\\(.*?\\))|((^|[ \\(])name\\(.*?\\))|((^|[ \\(])"
 				+ "category\\(.*?\\))|((^|[ \\(])rating [=><]=? \\d)|((^|[ \\(])(price [=><]=? \\d))"," ");
@@ -168,8 +176,12 @@ public class QueryParser {
 		String americanNew = "American (New)";
 		String americanTrad = "American (Traditional)";
 		query = query.trim();
+		while(query.matches("\\((.*)\\)")&& !query.contains("&&") && !query.contains("\\|\\|")){
+			query = query.replaceAll("\\((.*)\\)", "$1");
+		}
 		query = query.replaceAll(" {2,}", " ");
 		query = query.replaceAll("\\( +", "\\(");
+		query = query.replaceAll("\\) +","\\)");
 		query = query.replace(americanNew, "ThisisAPLaceHOlderANdNOoneINTHeirRIGHtmINDWOulDtypEthiN");
 		query = query.replace(americanTrad, "ThisisAPLaceHOlderANdNOoneINTHeirRIGHtmINDWOulDtypEthiT");
 		query = query.replaceAll("\\(\\(+(.*?\\(.*?\\))\\)\\)+", "($1)");
@@ -180,7 +192,7 @@ public class QueryParser {
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    QueryParser p = new QueryParser("(name(Momo Masala) && price >= 2)",db);
+	    QueryParser p = new QueryParser("(((in(Downtown Berkeley))))",db);
 	    p.findRestaurant();
 	}
 	
