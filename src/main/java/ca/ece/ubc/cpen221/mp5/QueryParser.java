@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 
 import org.json.simple.parser.ParseException;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 
 public class QueryParser {
 	
@@ -181,7 +180,7 @@ public class QueryParser {
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    QueryParser p = new QueryParser("(name(Momo Masala) && price >= 3)",db);
+	    QueryParser p = new QueryParser("(name(Momo Masala) && price >= 2)",db);
 	    p.findRestaurant();
 	}
 	

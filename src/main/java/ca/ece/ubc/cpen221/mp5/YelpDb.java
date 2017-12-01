@@ -56,7 +56,6 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		String photoUrl;
 		int price;
 		
-		JSONParser parser = new JSONParser();
 		JSONArray jsonArray;
 		
 		status = (boolean) restaurant.get("open");
@@ -124,45 +123,69 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		}
 	}
 
-	private void readReviewJson(String filePath) throws FileNotFoundException, IOException, ParseException {
+	public static YelpReview reviewParser(JSONObject review, boolean newReview, String newId) {
 		YelpReview yReview;
 		String businessId;
-		HashMap<String, Integer> votes;
+		HashMap<String, Integer> votes = new HashMap<String, Integer>();
 		String reviewId;
 		String text;
-		int stars;
+		int stars = 0;
 		String userId;
 		String date;
+		
+		if(newReview) {
+			votes.put("cool",0);
+			votes.put("useful", 0);
+			votes.put("funny", 0);
+		}
+		if(!newReview) {
+			stars = ((Long) review.get("stars")).intValue();
+			votes = (HashMap<String, Integer>) review.get("votes");
+		}
+		businessId = (String) review.get("business_id");
+		reviewId = (String) review.get("review_id");
+		text = (String) review.get("text");
+		
+		userId = (String) review.get("user_id");
+		date = (String) review.get("date");
 
+		return new YelpReview(reviewId, businessId, new HashMap<String, Integer>(votes), text, stars, userId, date);
+	}
+	private void readReviewJson(String filePath) throws FileNotFoundException, IOException, ParseException {
+		YelpReview reviewAdd;
 		JSONParser parser = new JSONParser();
-		JSONArray jsonArray;
 		BufferedReader buffRead = new BufferedReader(new FileReader(filePath));
 		String line;
-		
 		while(!((line = buffRead.readLine()) == null)){
 		//for (Object o : jsonArray) {
 			JSONObject review = (JSONObject) parser.parse(line);
-			businessId = (String) review.get("business_id");
-			votes = (HashMap<String, Integer>) review.get("votes");
-			reviewId = (String) review.get("review_id");
-			text = (String) review.get("text");
-			stars = ((Long) review.get("stars")).intValue();
-			userId = (String) review.get("user_id");
-			date = (String) review.get("date");
-
-			yReview = new YelpReview(reviewId, businessId, new HashMap<String, Integer>(votes), text, stars, userId, date);
-			reviews.put(reviewId,yReview);
+			reviewAdd = YelpDb.reviewParser(review, false, (String)review.get("review_id"));
+			reviews.put(reviewAdd.getId(),reviewAdd);
 		}
 	}
 
+	public static YelpUser userParser(JSONObject user, boolean newUser, String newId) {
+		YelpUser yUser;
+		String url = "http://www.yelp.com/user_details?userid=" + newId;
+		HashMap<String, Integer> votes = new HashMap<String, Integer>();
+		int reviewCount = 0;
+		String name;
+		double averageStars = 0;
+		String userId = newId;
+		
+		name = (String) user.get("name");
+		if(!newUser) {
+			url = (String) user.get("url");
+			votes = (HashMap<String, Integer>) user.get("votes");
+			reviewCount = ((Long) user.get("review_count")).intValue();
+			averageStars = (double) user.get("average_stars");
+			userId = (String) user.get("user_id");
+		}
+		
+		return new YelpUser(userId, url, new HashMap<String, Integer>(votes), reviewCount, name, averageStars);
+	}
 	private void readUserJson(String filePath) throws FileNotFoundException, IOException, ParseException {
 		YelpUser yUser;
-		String url;
-		HashMap<String, Integer> votes;
-		int reviewCount;
-		String name;
-		double averageStars;
-		String userId;
 		
 		JSONParser parser = new JSONParser();
 		JSONArray jsonArray;
@@ -172,18 +195,10 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		while(!((line = buffRead.readLine()) == null)){
 		//for (Object o : jsonArray) {
 			JSONObject user = (JSONObject) parser.parse(line);
-			url = (String) user.get("url");
-			votes = (HashMap<String, Integer>) user.get("votes");
-			reviewCount = ((Long) user.get("review_count")).intValue();
-			averageStars = (double) user.get("average_stars");
-			name = (String) user.get("name");
-			userId = (String) user.get("user_id");
-			
-			yUser = new YelpUser(userId, url, new HashMap<String, Integer>(votes), reviewCount, name, averageStars);
-			users.put(userId,yUser);
+			yUser = YelpDb.userParser(user, false, (String)user.get("user_id"));
+			users.put(yUser.getId(),yUser);
 		}
 	}
-	
 	public void addRestaurant (YelpRestaurant restaurant){
 		restaurants.put(restaurant.getId(), restaurant);
 	}
