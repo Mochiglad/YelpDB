@@ -8,9 +8,10 @@ import java.util.stream.Collectors;
 
 public class Prediction{
 	
-	public static double predict(String businessID,MP5Db database,String userID){
+	public static double predict(String businessID,MP5Db p,String userID,MP5Db database){
 		HashMap<String,YelpReview> reviews = (HashMap<String, YelpReview>) ((YelpDb)database).getReviews();
 		HashMap<String,YelpRestaurant> restaurants = (HashMap<String, YelpRestaurant>) ((YelpDb)database).getRestaurants();
+		HashMap<String,YelpRestaurant> pRestaurants = (HashMap<String, YelpRestaurant>) ((YelpDb)p).getRestaurants();
 		
 		List<YelpReview> relevantReviews = reviews.values().stream()
 				.filter(review-> review.getUserId().equals(userID)).collect(Collectors.toList());
@@ -53,6 +54,6 @@ public class Prediction{
 		double b = Sxy/Sxx;
 		double a = yMean - b*xMean;
 		
-		return b*restaurants.get(businessID).getPrice()+a;
+		return b*pRestaurants.get(businessID).getPrice()+a;
 	}
 }

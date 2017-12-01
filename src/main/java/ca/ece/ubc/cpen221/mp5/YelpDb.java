@@ -288,28 +288,32 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 				pointSet.get(closest).add(i);
 			}
 			
-			for(int i = 0; i < pointSet.size(); i++){
-				Double[] newCenter = newCenter(points,pointSet.get(i));
-				
-				if(newCenter[0].doubleValue() != centers.get(i)[0].doubleValue() && newCenter[1].doubleValue() != centers.get(i)[1].doubleValue()){
-					centers.remove(i);
-					centers.add(i,newCenter);
-					changed = true;
+			synchronized(this){
+				for(int i = 0; i < pointSet.size(); i++){
+					Double[] newCenter = newCenter(points,pointSet.get(i));
+					
+					if(newCenter[0].doubleValue() != centers.get(i)[0].doubleValue() && newCenter[1].doubleValue() != centers.get(i)[1].doubleValue()){
+						centers.remove(i);
+						centers.add(i,newCenter);
+						changed = true;
+					}
 				}
 			}
 			
-			boolean hasEmpty = false;
-			for(int i = 0; i < pointSet.size(); i++){
-				if(pointSet.get(i).isEmpty()){
-					hasEmpty = true;
-					centers.add(i,new Double[]{r.nextDouble()*X_RANGE+X_LOWER_BOUND,r.nextDouble()*Y_RANGE+Y_LOWER_BOUND});
-					centers.remove(i+1);
+			synchronized(this){
+				boolean hasEmpty = false;
+				for(int i = 0; i < pointSet.size(); i++){
+					if(pointSet.get(i).isEmpty()){
+						hasEmpty = true;
+						centers.add(i,new Double[]{r.nextDouble()*X_RANGE+X_LOWER_BOUND,r.nextDouble()*Y_RANGE+Y_LOWER_BOUND});
+						centers.remove(i+1);
+					}
 				}
-			}
-			if(hasEmpty)
-				check++;
-			if(check == 300000){
-				throw new IllegalArgumentException("not enough unique data points to cluster into "+k+" clusters");
+				if(hasEmpty)
+					check++;
+				if(check == 300000){
+					throw new IllegalArgumentException("not enough unique data points to cluster into "+k+" clusters");
+				}
 			}
 		} 
 		
@@ -366,7 +370,7 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 
 	@Override
 	public ToDoubleBiFunction getPredictorFunction(String user) {
-		ToDoubleBiFunction<String,MP5Db> predictFromPrice = (x,y) -> Prediction.predict(x,y,user);
+		ToDoubleBiFunction<String,MP5Db> predictFromPrice = (x,y) -> Prediction.predict(x,y,user,this);
 		return predictFromPrice;
 	}
 	

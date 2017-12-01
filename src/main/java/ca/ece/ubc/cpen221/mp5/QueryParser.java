@@ -183,7 +183,7 @@ public class QueryParser {
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    QueryParser p = new QueryParser("in(Downtown Berkeley) || (category(Mexican) || category(Creperies))",db);
+	    QueryParser p = new QueryParser("(category(Mexican) && price >= 3)",db);
 	    p.findRestaurant();
 	}
 	
