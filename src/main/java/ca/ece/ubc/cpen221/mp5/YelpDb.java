@@ -129,7 +129,7 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		HashMap<String, Integer> votes = new HashMap<String, Integer>();
 		String reviewId = newId;
 		String text;
-		int stars = 0;
+		int stars;
 		String userId;
 		String date;
 		
@@ -139,12 +139,11 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 			votes.put("funny", 0);
 		}
 		if(!newReview) {
-			stars = ((Long) review.get("stars")).intValue();
 			votes = (HashMap<String, Integer>) review.get("votes");
 			reviewId = (String) review.get("review_id");
 		}
 		businessId = (String) review.get("business_id");
-		
+		stars = ((Long) review.get("stars")).intValue();
 		text = (String) review.get("text");
 		
 		userId = (String) review.get("user_id");
@@ -350,6 +349,80 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		return Math.pow(center[0].doubleValue() - point[0].doubleValue(),2) + Math.pow(center[1].doubleValue() - point[1].doubleValue(), 2);
 	}
 	
+	public void updateDB(String reviewId, String userId) {
+		YelpRestaurant updateRestaurant;
+		YelpUser updateUser;
+		boolean status;
+		String url;
+		double longitude;
+		double latitude;
+		HashSet<String> neighborhoods;
+		HashSet<String> categories;
+		HashSet<String> schools;
+		String name;
+		String state;
+		String BType;
+		double stars;
+		String city;
+		String fullAddress;
+		int reviewCount;
+		String photoUrl;
+		int price;
+		String businessId = reviews.get(reviewId).getBusinessId();
+		
+		String urlUser;
+		HashMap<String, Integer> votes;
+		int reviewCountUser;
+		String nameUser;
+		double averageStars;
+		
+		
+		updateRestaurant = restaurants.get(businessId);
+		status = updateRestaurant.getStatus();
+		url = updateRestaurant.getUrl();
+		longitude = updateRestaurant.getLongitude();
+		latitude = updateRestaurant.getLatitude();
+		neighborhoods = new HashSet<String>(updateRestaurant.getNeighborhoods());
+		categories = new HashSet<String>(updateRestaurant.getCategories());
+		schools = new HashSet<String>(updateRestaurant.getSchools());
+		name = updateRestaurant.getName();
+		state = updateRestaurant.getState();
+		BType = updateRestaurant.getBType();
+		stars = updateRestaurant.getStars();
+		city = updateRestaurant.getCity();
+		fullAddress = updateRestaurant.getFullAddress();
+		reviewCount = updateRestaurant.getReviewCount();
+		photoUrl = updateRestaurant.getPhotoUrl();
+		price = updateRestaurant.getPrice();
+		
+		System.out.println("asdfasdf" + reviews.get(reviewId).getStars());
+		stars = updateStars(reviewCount, stars, (double)reviews.get(reviewId).getStars());
+		stars = Math.floor(stars * 100) / 100;
+		reviewCount++;
+
+		restaurants.put(businessId,new YelpRestaurant(businessId, status, url, longitude, latitude, neighborhoods, categories, schools, businessId, name,
+				state, BType, stars, city, fullAddress, reviewCount, photoUrl, price));
+		
+		updateUser = users.get(reviews.get(reviewId).getUserId());
+		urlUser = updateUser.getUrl();
+		votes = new HashMap<String, Integer>(updateUser.getVotes());
+		reviewCountUser = updateUser.getReviewCount();
+		averageStars = updateUser.getAverageStars();
+		
+		averageStars = updateStars(reviewCountUser, averageStars, reviews.get(reviewId).getStars());
+		reviewCountUser++;
+		users.put(updateUser.getId(), new YelpUser( updateUser.getId(),  urlUser, votes,  reviewCountUser,  name,
+				 averageStars));
+	}
+	
+	private static double updateStars(int reviewCount, double stars, double reviewStars) {
+		double newStars;
+		newStars = reviewCount * stars;
+		newStars += reviewStars;
+		newStars /= (reviewCount + 1);
+		System.out.println(newStars + " " + reviewCount + " " + reviewStars);
+		return newStars;
+	}
 	private Double[] newCenter(HashMap<Integer,Double[]> Allpoints,Set<Integer> pointSet){
 		double xAvg = 0;
 		double yAvg = 0;

@@ -20,20 +20,19 @@ public class YelpDBServer {
 	private BigInteger newIdRestaurant;
 	private BigInteger newIdReview;
 	private BigInteger newIdUser;
-	
-	
-	
+
 	/**
 	 * Start a YelpDBServer running on the default port.
-	 * @throws ParseException 
+	 * 
+	 * @throws ParseException
 	 */
-	public static void main(String[] args) throws InvalidPortException, ParseException{
-		if(args.length > 0) {
+	public static void main(String[] args) throws InvalidPortException, ParseException {
+		if (args.length > 0) {
 			throw new InvalidPortException();
 		}
-		//port = Integer.parseInt(args[0]);
+		// port = Integer.parseInt(args[0]);
 		port = 4950;
-		if(port > 65535 || port < 0) {
+		if (port > 65535 || port < 0) {
 			throw new InvalidPortException();
 		}
 		try {
@@ -57,7 +56,7 @@ public class YelpDBServer {
 	 * 
 	 * @param port
 	 *            port number, requires 0 <= port <= 65535
-	 * @throws ParseException 
+	 * @throws ParseException
 	 * @throws IOException
 	 */
 	public YelpDBServer(int port) throws IOException, ParseException {
@@ -103,14 +102,14 @@ public class YelpDBServer {
 		}
 	}
 
-	/** 
+	/**
 	 * Handle one client connection. Returns when client disconnects.
 	 * 
 	 * @param socket
 	 *            socket where client is connected
 	 * @throws IOException
 	 *             if connection encounters an error
-	 * @throws ParseException 
+	 * @throws ParseException
 	 */
 	private void handle(Socket socket) throws IOException, ParseException {
 		System.err.println("client connected");
@@ -118,20 +117,17 @@ public class YelpDBServer {
 		// get the socket's input stream, and wrap converters around it
 		// that convert it from a byte stream to a character stream,
 		// and that buffer it so that we can read a line at a time
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-				socket.getInputStream()));
+		BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
 		// similarly, wrap character=>bytestream converter around the
 		// socket output stream, and wrap a PrintWriter around that so
 		// that we have more convenient ways to write Java primitive
 		// types to it.
-		PrintWriter out = new PrintWriter(new OutputStreamWriter(
-				socket.getOutputStream()), true);
+		PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 
 		try {
 			// each request is a single line containing a number
-			for (String line = in.readLine(); line != null; line = in
-					.readLine()) {
+			for (String line = in.readLine(); line != null; line = in.readLine()) {
 				System.err.println("request: " + line);
 				fillRequest(line);
 			}
@@ -142,7 +138,11 @@ public class YelpDBServer {
 	}
 
 	private void fillRequest(String request) throws ParseException {
-		String [] split = request.split(" ");
+		String[] split = request.split(" ");
+		if(split.length < 2) {
+			System.err.println("ERR: ILLEGAL_REQUEST");
+			return;
+		}
 		String operation = split[0];
 		String input = split[1];
 		Map<String, YelpRestaurant> restaurants = database.getRestaurants();
@@ -151,54 +151,82 @@ public class YelpDBServer {
 		YelpRestaurant addRestaurant;
 		YelpReview addReview;
 		YelpUser addUser;
-		if(operation.equals("GETRESTAURANT")) {
+
+		if (operation.equals("GETRESTAURANT")) {
+			if(!restaurants.containsKey(input)) {
+				System.err.println("ERR: NO_SUCH_RESTAURANT");
+				return;
+			}
 			System.out.println(restaurants.get(input).toJson());
 		}
-		if(operation.equals("ADDRESTAURANT")) {
-			for(int i = 2; i < split.length - 1; i++) {
+		else if (operation.equals("ADDRESTAURANT")) {
+			JSONObject json = null;
+			for (int i = 2; i < split.length - 1; i++) {
 				input += split[i] + " ";
 			}
 			System.out.println(input);
 			input += split[split.length - 1];
 
 			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(input);
-			addRestaurant = YelpDb.restaurantParser(json, true, newIdRestaurant + "");
-			restaurants.put(newIdRestaurant + "", addRestaurant);
-			System.out.println(newIdRestaurant + " " + (String)(restaurants.get(newIdRestaurant + "").getBusinessId()));
-			newIdRestaurant.add(BigInteger.valueOf(1));
-			
+			try {
+				json = (JSONObject) parser.parse(input);
+				addRestaurant = YelpDb.restaurantParser(json, true, newIdRestaurant + "");
+				restaurants.put(newIdRestaurant + "", addRestaurant);
+				System.out.println(newIdRestaurant);
+				newIdRestaurant = newIdRestaurant.add(BigInteger.valueOf(1));
+				
+			} catch (Exception e) {
+				System.err.println("ERR: INVALID_RESTAURANT_STRING");
+			}
+
 		}
-		if(operation.equals("ADDREVIEW")) {
-			for(int i = 2; i < split.length - 1; i++) {
+		else if (operation.equals("ADDREVIEW")) {
+			JSONObject json;
+			for (int i = 2; i < split.length - 1; i++) {
 				input += split[i] + " ";
 			}
 			System.out.println(input);
 			input += split[split.length - 1];
 
 			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(input);
-			addReview = YelpDb.reviewParser(json, true, newIdReview + "");
-			reviews.put(newIdReview + "", addReview);
-			System.out.println(reviews.get(newIdReview + "").getId() + " " + reviews.get(newIdReview + "").getText());
-			newIdReview.add(BigInteger.valueOf(1));
+			try {
+				json = (JSONObject) parser.parse(input);
+				addReview = YelpDb.reviewParser(json, true, newIdReview + "");
+				if(!restaurants.containsKey(addReview.getBusinessId())) {
+					System.out.println("ERR: NO_SUCH_RESTAURANT");
+				}
+				if(!users.containsKey(addReview.getUserId())) {
+					System.out.println("ERR: NO_SUCH_USER");
+				}
+				reviews.put(newIdReview + "", addReview);
+				System.out
+						.println(reviews.get(newIdReview + "").getId() + " " + reviews.get(newIdReview + "").getText());
+				newIdReview = newIdReview.add(BigInteger.valueOf(1));
+				database.updateDB(addReview.getId(), addReview.getUserId());
+			} catch (Exception e) {
+				System.err.println("ERR: INVALID_REVIEW_STRING");
+			}
+
 		}
-		if(operation.equals("ADDUSER")) {
-			for(int i = 2; i < split.length - 1; i++) {
+		else if (operation.equals("ADDUSER")) {
+			JSONObject json;
+			for (int i = 2; i < split.length - 1; i++) {
 				input += split[i] + " ";
 			}
 			System.out.println(input);
 			input += split[split.length - 1];
-
 			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(input);
-			addUser = YelpDb.userParser(json, true, newIdUser + "");
-			users.put(newIdUser + "", addUser);
-			System.out.println(newIdUser + " " + (String)(users.get(newIdUser + "").getId()));
-			newIdUser.add(BigInteger.valueOf(1));
+			try {
+				json = (JSONObject) parser.parse(input);
+				addUser = YelpDb.userParser(json, true, newIdUser + "");
+				users.put(newIdUser + "", addUser);
+				newIdUser = newIdUser.add(BigInteger.valueOf(1));
+			} catch (Exception e) {
+				System.err.println("ERR: INVALID_USER_STRING");
+			}
+		} else {
+			System.err.println("ERR: ILLEGAL_REQUEST");
 		}
 	}
 
-	
 }
-
