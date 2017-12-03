@@ -395,7 +395,6 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		photoUrl = updateRestaurant.getPhotoUrl();
 		price = updateRestaurant.getPrice();
 		
-		System.out.println("asdfasdf" + reviews.get(reviewId).getStars());
 		stars = updateStars(reviewCount, stars, (double)reviews.get(reviewId).getStars());
 		stars = Math.floor(stars * 100) / 100;
 		reviewCount++;
@@ -408,10 +407,11 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		votes = new HashMap<String, Integer>(updateUser.getVotes());
 		reviewCountUser = updateUser.getReviewCount();
 		averageStars = updateUser.getAverageStars();
+		nameUser = updateUser.getName();
 		
 		averageStars = updateStars(reviewCountUser, averageStars, reviews.get(reviewId).getStars());
 		reviewCountUser++;
-		users.put(updateUser.getId(), new YelpUser( updateUser.getId(),  urlUser, votes,  reviewCountUser,  name,
+		users.put(updateUser.getId(), new YelpUser(updateUser.getId(),  urlUser, votes,  reviewCountUser,  nameUser,
 				 averageStars));
 	}
 	
@@ -420,7 +420,6 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		newStars = reviewCount * stars;
 		newStars += reviewStars;
 		newStars /= (reviewCount + 1);
-		System.out.println(newStars + " " + reviewCount + " " + reviewStars);
 		return newStars;
 	}
 	private Double[] newCenter(HashMap<Integer,Double[]> Allpoints,Set<Integer> pointSet){

@@ -14,8 +14,6 @@ import java.util.stream.Stream;
 
 import org.json.simple.parser.ParseException;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Regex;
-
 public class QueryParser {
 	
 	String query;
