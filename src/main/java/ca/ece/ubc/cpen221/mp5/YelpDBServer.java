@@ -140,7 +140,7 @@ public class YelpDBServer {
 	private synchronized void fillRequest(String request) throws ParseException {
 		String[] split; 
 		String operation;
-		String input;
+		String input = "";
 		Map<String, YelpRestaurant> restaurants = database.getRestaurants();
 		Map<String, YelpReview> reviews = database.getReviews();
 		Map<String, YelpUser> users = database.getUsers();
@@ -155,8 +155,8 @@ public class YelpDBServer {
 			return;
 		}
 		operation = split[0];
-		input = split[1];
 		if (operation.equals("GETRESTAURANT")) {
+			input = split[1];
 			if(!restaurants.containsKey(input)) {
 				System.err.println("ERR: NO_SUCH_RESTAURANT");
 				return;
@@ -164,6 +164,7 @@ public class YelpDBServer {
 			System.out.println("ID: " + restaurants.get(input).getBusinessId() + "\nRESTAURANT: " + restaurants.get(input).toJson());
 		}
 		else if (operation.equals("GETREVIEW")) {
+			input = split[1];
 			if(!reviews.containsKey(input)) {
 				System.err.println("ERR: NO_SUCH_REVIEW");
 				return;
@@ -171,6 +172,7 @@ public class YelpDBServer {
 			System.out.println("ID: " + reviews.get(input).getId() + "\nREVIEW: " + reviews.get(input).toJson());
 		}
 		else if (operation.equals("GETUSER")) {
+			input = split[1];
 			if(!users.containsKey(input)) {
 				System.err.println("ERR: NO_SUCH_USER");
 				return;
@@ -178,6 +180,7 @@ public class YelpDBServer {
 			System.out.println("ID: " + users.get(input).getId() + "\nUSER: " + users.get(input).toJson());
 		}
 		else if (operation.equals("ADDRESTAURANT")) {
+			input = split[1];
 			JSONObject json = null;
 			for (int i = 2; i < split.length - 1; i++) {
 				split[i] = split[i].trim();
@@ -198,6 +201,7 @@ public class YelpDBServer {
 
 		}
 		else if (operation.equals("ADDREVIEW")) {
+			input = split[1];
 			JSONObject json;
 			for (int i = 2; i < split.length - 1; i++) {
 				split[i] = split[i].trim();
@@ -227,6 +231,7 @@ public class YelpDBServer {
 
 		}
 		else if (operation.equals("ADDUSER")) {
+			input = split[1];
 			JSONObject json;
 			for (int i = 2; i < split.length - 1; i++) {
 				split[i] = split[i].trim();
@@ -244,7 +249,20 @@ public class YelpDBServer {
 				System.err.println(e);
 			}
 		} else {
-			System.err.println("ERR: ILLEGAL_REQUEST");
+			try{
+				for (int i = 0; i < split.length - 1; i++) {
+					split[i] = split[i].trim();
+					input += split[i] + " ";
+				}
+				if(split.length > 1) {
+					input += split[split.length - 1];
+				}
+				System.out.println(input);
+				QueryParser query = new QueryParser(input, database);
+				query.findRestaurant();
+			} catch (Exception e) {
+				System.err.println("ERR: ILLEGAL_REQUEST");
+			}
 		}
 	}
 

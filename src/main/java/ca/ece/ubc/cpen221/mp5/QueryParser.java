@@ -208,7 +208,7 @@ public class QueryParser {
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    QueryParser p = new QueryParser("rating = 1",db);
+	    QueryParser p = new QueryParser("rating = 2",db);
 	    p.findRestaurant();
 	}
 	
