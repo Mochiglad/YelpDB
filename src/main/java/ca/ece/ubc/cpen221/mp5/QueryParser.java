@@ -19,10 +19,8 @@ public class QueryParser {
 	String query;
 	Map<String,YelpRestaurant> restaurants;
 	
+	//constructor
 	public QueryParser(String query,YelpDb data){
-		query = clean(query);
-		checkNums(query);
-		
 		if(!query.contains("&&") && !query.contains("\\|\\|")){
 			if(query.matches("^.*?(\\)|\\d) .*?$")){
 				throw new IllegalArgumentException("query not valid");
@@ -30,10 +28,13 @@ public class QueryParser {
 			query = query + " &&";
 		}
 		
+		query = clean(query);
+		checkNums(query);
+		
 		String valid = query.replaceAll("((^|[ \\(])in\\(.*?\\))|((^|[ \\(])name\\(.*?\\))|((^|[ \\(])"
 				+ "category\\(.*?\\))|((^|[ \\(])rating [=><]=? \\d)|((^|[ \\(])(price [=><]=? \\d))"," ");
 		
-		if(valid.matches("(^| )[^ ]+\\(")||query.matches(".*?[&\\|]{2,} *[&\\|]+.*?")){
+		if(valid.matches("(^| )[^ ]+\\(.*?")||query.matches(".*?[&\\|]{2,} *[&\\|]+.*?")){
 			throw new IllegalArgumentException("query not valid");
 		}
 		
@@ -79,6 +80,10 @@ public class QueryParser {
 		return new HashSet<YelpRestaurant>(restaurantList);
 	}
 	
+	/**
+	 * helper that parses query into atoms
+	 * @return an arraylist of atoms
+	 */
 	public ArrayList<String> parse(){
 		Stack<Integer> openIndex = new Stack<Integer>();
 		ArrayList<String> atoms = new ArrayList<String>();
@@ -115,6 +120,13 @@ public class QueryParser {
 		return atoms;
 	}
 	
+	/**
+	 * AND Filter: filters out restaurants from the list by a command in s for && commands
+	 * 
+	 * @param s the command to be performed
+	 * @param restList the list of restaurants that is being filtered
+	 * @return a filtered list of restaurants
+	 */
 	private ArrayList<YelpRestaurant> filter (String s,ArrayList<YelpRestaurant> restList) {
 		s = s.trim();
 		if(s.contains("in(")){
@@ -156,6 +168,12 @@ public class QueryParser {
 		return restList;
 	}
 	
+	/**
+	 * OR Filter: filters out restaurants from the list by a command in s for || commands 
+	 * @param S the commands to be performed
+	 * @param restList the list of restaurants that is being filtered
+	 * @return a filtered list of restaurants
+	 */
 	private ArrayList<YelpRestaurant> filter(String[] S, ArrayList<YelpRestaurant> restList){
 		List<List<YelpRestaurant>> holder = new ArrayList<List<YelpRestaurant>>();
 		for(String s : S){
@@ -175,6 +193,11 @@ public class QueryParser {
 		return new ArrayList<YelpRestaurant>(combine);
 	}
 	
+	/**
+	 * cleans the query (removes double spaces, redundant parentheses)
+	 * @param query the query that is being "cleaned"
+	 * @return the "clean" query
+	 */
 	private synchronized String clean(String query){
 		String americanNew = "American (New)";
 		String americanTrad = "American (Traditional)";
@@ -193,6 +216,11 @@ public class QueryParser {
 		return query;
 	}
 	
+	/**
+	 * Ensures that the query only contains nums form 1 - 5
+	 * @throws IllegalArgumentException if query contains num outside of 1 - 5
+	 * @param query the query to be checked
+	 */
 	private void checkNums(String query){
 		String numsOnly = query.replaceAll("[^\\d ]", "");
 		String[] inputNums = numsOnly.split(" +");
@@ -204,12 +232,5 @@ public class QueryParser {
 				}
 			}
 		}
-	}
-	
-	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
-		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-	    QueryParser p = new QueryParser("rating = 2",db);
-	    p.findRestaurant();
-	}
-	
+	}	
 }

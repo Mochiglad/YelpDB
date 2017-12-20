@@ -53,7 +53,25 @@ public class YelpDbTest {
 	@Test
 	public void test5() throws FileNotFoundException, IOException, ParseException{
 		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
-		Set<YelpRestaurant> restSet = db.getMatches("price <= 2 && rating <= 2");
+		Set<YelpRestaurant> restSet = db.getMatches("(price <= 2 && rating <= 2)");
 		assertEquals(3, restSet.size());
+	}
+	
+	@Test (expected = IllegalArgumentException.class)
+	public void test6() throws FileNotFoundException, IOException, ParseException{
+		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
+		Set<YelpRestaurant> restSet = db.getMatches("price <= 6 && rating <= 2");
+	}
+	
+	@Test (expected = IllegalArgumentException.class)
+	public void test7() throws FileNotFoundException, IOException, ParseException{
+		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
+		Set<YelpRestaurant> restSet = db.getMatches("gross(\"lol\")");
+	}
+	
+	@Test (expected = IllegalArgumentException.class)
+	public void test8() throws FileNotFoundException, IOException, ParseException{
+		YelpDb db = new YelpDb("data/users.json","data/reviews.json","data/restaurants.json");
+		Set<YelpRestaurant> restSet = db.getMatches("gross(\"lol\") ho(\"no\")");
 	}
 }

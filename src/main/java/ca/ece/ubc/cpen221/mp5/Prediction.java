@@ -8,6 +8,15 @@ import java.util.stream.Collectors;
 
 public class Prediction{
 	
+	/**
+	 * Develops a function of stars vs pricing for a specific user based on past user activity
+	 * 
+	 * @param businessID id of business to predict
+	 * @param p database that businessID is located
+	 * @param userID id of user's review that's being predicted
+	 * @param database database used for learning userID's review habit
+	 * @return
+	 */
 	public static double predict(String businessID,MP5Db p,String userID,MP5Db database){
 		HashMap<String,YelpReview> reviews = (HashMap<String, YelpReview>) ((YelpDb)database).getReviews();
 		HashMap<String,YelpRestaurant> restaurants = (HashMap<String, YelpRestaurant>) ((YelpDb)database).getRestaurants();

@@ -36,6 +36,13 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		readUserJson(userJsonPath);
 	}
 	
+	/**
+	 * converts JSON file objects to YelpRestaurant
+	 * @param restaurant the JSONObject to be converted
+	 * @param newRestaurant checks if it is a new restaurant
+	 * @param newId 
+	 * @return the YelpRestaurant
+	 */
 	public static YelpRestaurant restaurantParser(JSONObject restaurant, boolean newRestaurant, String newId) {
 		YelpRestaurant yRestaurant;
 		boolean status;
@@ -103,6 +110,15 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		return new YelpRestaurant(businessId, status, url, longitude, latitude, neighborhoodsCopy, categoriesCopy,
 				schoolsCopy, businessId, name, state, BType, stars, city, fullAddress, reviewCount, photoUrl, price);
 	}
+	
+	/**
+	 * reads the JSONrestaurant file
+	 * 
+	 * @param filePath path of file to be read
+	 * @throws FileNotFoundException if no file of that name
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	private void readRestaurantJson(String filePath) throws FileNotFoundException, IOException, ParseException {
 		/*
 		 * id, status, url, longitude, latitude, neighborhoods, categories, schools,
@@ -122,7 +138,14 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 			restaurants.put(restaurantAdd.getId(),restaurantAdd);
 		}
 	}
-
+	
+	/**
+	 * converts JSON file objects to YelpReview
+	 * @param restaurant the JSONObject to be converted
+	 * @param newRestaurant checks if it is a new review
+	 * @param newId 
+	 * @return the YelpReview
+	 */
 	public static YelpReview reviewParser(JSONObject review, boolean newReview, String newId) {
 		YelpReview yReview;
 		String businessId;
@@ -151,6 +174,15 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 
 		return new YelpReview(reviewId, businessId, new HashMap<String, Integer>(votes), text, stars, userId, date);
 	}
+	
+	/**
+	 * reads the JSONreview file
+	 * 
+	 * @param filePath path of file to be read
+	 * @throws FileNotFoundException if no file of that name
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	private void readReviewJson(String filePath) throws FileNotFoundException, IOException, ParseException {
 		YelpReview reviewAdd;
 		JSONParser parser = new JSONParser();
@@ -163,7 +195,14 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 			reviews.put(reviewAdd.getId(),reviewAdd);
 		}
 	}
-
+	
+	/**
+	 * converts JSON file objects to YelpUser
+	 * @param restaurant the JSONObject to be converted
+	 * @param newRestaurant checks if it is a new user
+	 * @param newId 
+	 * @return the YelpUser
+	 */
 	public static YelpUser userParser(JSONObject user, boolean newUser, String newId) {
 		YelpUser yUser;
 		String url = "http://www.yelp.com/user_details?userid=" + newId;
@@ -184,6 +223,15 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		
 		return new YelpUser(userId, url, new HashMap<String, Integer>(votes), reviewCount, name, averageStars);
 	}
+	
+	/**
+	 * reads the JSONuser file
+	 * 
+	 * @param filePath path of file to be read
+	 * @throws FileNotFoundException if no file of that name
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	private void readUserJson(String filePath) throws FileNotFoundException, IOException, ParseException {
 		YelpUser yUser;
 		
@@ -199,37 +247,73 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 			users.put(yUser.getId(),yUser);
 		}
 	}
+	
+	/**
+	 * adds a YelpRestaurant to the database
+	 * @param restaurant restaurant to be added
+	 */
 	public void addRestaurant (YelpRestaurant restaurant){
 		restaurants.put(restaurant.getId(), restaurant);
 	}
 	
+	/**
+	 * adds a YelpUser to the database
+	 * @param user user to be added
+	 */
 	public void addUser (YelpUser user){
 		users.put(user.getId(), user);
 	}
 	
+	/**
+	 * adds a YelpReview to the database
+	 * @param review review to be added
+	 */
 	public void addReview (YelpReview review){
 		reviews.put(review.getId(), review);
 	}
 	
+	/**
+	 *
+	 * @return a map of all restaurants in the database
+	 */
 	public Map<String,YelpRestaurant> getRestaurants(){
 		return restaurants;
 	}
 	
+	/**
+	 * 
+	 * @return a map of all reviews in the database
+	 */
 	public Map<String,YelpReview> getReviews(){
 		return reviews;
 	}
 	
+	/**
+	 * 
+	 * @return a map of all users in the database
+	 */
 	public Map<String,YelpUser> getUsers(){
 		return users;
 	}
 	
-
+	/**
+	 * finds all restaurants that matches the query
+	 * 
+	 * @param queryString the query to be used to find matches
+	 * @return a Set of all YelpRestaurants that match the query
+	 */
 	@Override
 	public Set getMatches(String queryString) {
 		QueryParser qp = new QueryParser(queryString,this);
 		return qp.findRestaurant();
 	}
-
+	
+	/**
+	 * performs k-means clustering on the database
+	 * @param k the number of clusters to be made
+	 * @return a string of restaurant clusters in JSON format
+	 * @throws IllegalArgumentException if k is invalid
+	 */
 	@Override
 	public String kMeansClusters_json(int k) throws IllegalArgumentException {
 		int check = 0;
@@ -345,6 +429,12 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		return listSetToJson(restaurantSet);
 	}
 	
+	/**
+	 * calculated the distance between two cartesian points
+	 * @param center the start point
+	 * @param point the end point
+	 * @return the distance between the points
+	 */
 	private double distance(Double[] center, Double[] point){
 		return Math.pow(center[0].doubleValue() - point[0].doubleValue(),2) + Math.pow(center[1].doubleValue() - point[1].doubleValue(), 2);
 	}
@@ -422,6 +512,13 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		newStars /= (reviewCount + 1);
 		return newStars;
 	}
+	
+	/**
+	 * helper method for kmeans clustering. Finds the new center of each intermediate cluster
+	 * @param Allpoints a map of all restaurants
+	 * @param pointSet all points in the intermediate cluster
+	 * @return a new center point that is the average of the cluster
+	 */
 	private Double[] newCenter(HashMap<Integer,Double[]> Allpoints,Set<Integer> pointSet){
 		double xAvg = 0;
 		double yAvg = 0;
@@ -440,6 +537,11 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		return new Double[]{xAvg,yAvg};
 	}
 	
+	/**
+	 * helper method for kmeans clustering. builds string in JSON format
+	 * @param restaurantSet set of restaurants in their clusters
+	 * @return a string in JSONformat
+	 */
 	private String listSetToJson(ArrayList<Set<YelpRestaurant>> restaurantSet){
 		String jsonFormat = "[";
 		for(int i = 0; i < restaurantSet.size(); i++){
@@ -455,7 +557,12 @@ public class YelpDb implements MP5Db<YelpRestaurant> {
 		jsonFormat += "]";
 		return jsonFormat;
 	}
-
+	
+	/**
+	 * Creates a predictor function form a YelpUser
+	 * @param user the user that the method is learning from
+	 * @return the predictor function from the user
+	 */
 	@Override
 	public ToDoubleBiFunction getPredictorFunction(String user) {
 		ToDoubleBiFunction<String,MP5Db> predictFromPrice = (x,y) -> Prediction.predict(x,y,user,this);
