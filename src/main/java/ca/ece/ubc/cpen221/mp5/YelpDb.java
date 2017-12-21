@@ -25,10 +25,20 @@ import org.json.simple.parser.JSONParser;
 
 
 public class YelpDb implements MP5Db<YelpRestaurant> {
+	
+	//RI: users,reviews, and restaurants must be not null, and no YelpUser, YelpReview, YelpRestaurant can be null.
+	//    Each YelpUser, YelpReview and YelpRestaurant must be mapped by a unique Id
+	//AF: (Map(ID -> YelpUser), Map(ID -> YelpReview), Map(ID -> YelpRestaurant)) -> Yelp Database
 	private HashMap<String,YelpUser> users = new HashMap<String,YelpUser>();
 	private HashMap<String,YelpReview> reviews = new HashMap<String,YelpReview>();;
 	private HashMap<String,YelpRestaurant> restaurants = new HashMap<String,YelpRestaurant>();;
 
+	/**
+	 * converts JSON file objects to YelpRestaurant
+	 * @param userJsonPath the file-path for pre-existing user data
+	 * @param reviewJsonPath the file-path for pre-existing review data
+	 * @param restaurantJsonPath the file-path for pre-existing restaurant data 
+	 */
 	public YelpDb(String userJsonPath, String reviewJsonPath, String restaurantJsonPath)
 			throws FileNotFoundException, IOException, ParseException {
 		readRestaurantJson(restaurantJsonPath);

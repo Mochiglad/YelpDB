@@ -13,25 +13,30 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class YelpDBServer {
-	/** Default port number where the server listens for connections. */
+	/** Port number where the server listens for connections. */
 	private static int port;
-	private ServerSocket serverSocket;
+	
+	private ServerSocket serverSocket; 
 	private YelpDb database;
 	private BigInteger newIdRestaurant;
 	private BigInteger newIdReview;
 	private BigInteger newIdUser;
 
 	/**
-	 * Start a YelpDBServer running on the default port.
+	 * Start a YelpDBServer running on the port passed through command-line
 	 * 
-	 * @throws ParseException
+	 * @throws ParseException, InvalidPortException
 	 */
 	public static void main(String[] args) throws InvalidPortException, ParseException {
-		if (args.length > 0) {
+		if (args.length > 1) {
 			throw new InvalidPortException();
 		}
-		// port = Integer.parseInt(args[0]);
-		port = 4950;
+		try {
+			port = Integer.parseInt(args[0]);
+		} catch(Exception e) {
+			throw new InvalidPortException();
+		}
+		
 		if (port > 65535 || port < 0) {
 			throw new InvalidPortException();
 		}
@@ -45,11 +50,8 @@ public class YelpDBServer {
 	// Rep invariant: serverSocket != null
 	//
 	// Thread safety argument:
-	// TODO FIBONACCI_PORT
-	// TODO serverSocket
-	// TODO socket objects
-	// TODO readers and writers in handle()
-	// TODO data in handle()
+	// Only one client may have their request filled at a time due to synchronization, therefore no two threads will
+	// access the database at the same time, making the server thread-safe.
 
 	/**
 	 * Make a YelpDBServer that listens for connections on port.
@@ -66,7 +68,15 @@ public class YelpDBServer {
 		newIdUser = BigInteger.valueOf(0);
 		serverSocket = new ServerSocket(port);
 	}
-
+	
+	/**
+	 * Allows for immediate testing on the fillRequest Function.
+	 * 
+	 * @param request: request to fill.
+	 */
+	public void test(String request) throws ParseException {
+		fillRequest(request);
+	}
 	/**
 	 * Run the server, listening for connections and handling them.
 	 * 
@@ -132,11 +142,19 @@ public class YelpDBServer {
 				fillRequest(line);
 			}
 		} finally {
-			out.close();
 			in.close();
+			out.close();
 		}
 	}
-
+	
+	/**
+	 * Complete the request from a client.
+	 * 
+	 * @param request
+	 *            client request for queries.
+	 * @throws ParseException
+	 * 			  if JSON does not parse correctly
+	 */
 	private synchronized void fillRequest(String request) throws ParseException {
 		String[] split; 
 		String operation;
@@ -148,6 +166,7 @@ public class YelpDBServer {
 		YelpReview addReview;
 		YelpUser addUser;
 		
+		//Parse the request into operation and input.
 		request = request.trim();
 		split = request.split(" ");
 		if(split.length < 2) {
@@ -155,30 +174,20 @@ public class YelpDBServer {
 			return;
 		}
 		operation = split[0];
+		
+		//If the request is GETRESTAURANT, get the restaurant with the ID specified in the input
 		if (operation.equals("GETRESTAURANT")) {
 			input = split[1];
+			
+			//Output and error if there is no such restaurant
 			if(!restaurants.containsKey(input)) {
 				System.err.println("ERR: NO_SUCH_RESTAURANT");
 				return;
 			}
 			System.out.println("ID: " + restaurants.get(input).getBusinessId() + "\nRESTAURANT: " + restaurants.get(input).toJson());
 		}
-		else if (operation.equals("GETREVIEW")) {
-			input = split[1];
-			if(!reviews.containsKey(input)) {
-				System.err.println("ERR: NO_SUCH_REVIEW");
-				return;
-			}
-			System.out.println("ID: " + reviews.get(input).getId() + "\nREVIEW: " + reviews.get(input).toJson());
-		}
-		else if (operation.equals("GETUSER")) {
-			input = split[1];
-			if(!users.containsKey(input)) {
-				System.err.println("ERR: NO_SUCH_USER");
-				return;
-			}
-			System.out.println("ID: " + users.get(input).getId() + "\nUSER: " + users.get(input).toJson());
-		}
+		
+		//If the request is ADDRESTAURANT, add the restaurant json into the database
 		else if (operation.equals("ADDRESTAURANT")) {
 			input = split[1];
 			JSONObject json = null;
@@ -189,6 +198,8 @@ public class YelpDBServer {
 			input += split[split.length - 1];
 
 			JSONParser parser = new JSONParser();
+			
+			//Attempt to add the json to the database.
 			try {
 				json = (JSONObject) parser.parse(input);
 				addRestaurant = YelpDb.restaurantParser(json, true, newIdRestaurant + "");
@@ -200,6 +211,8 @@ public class YelpDBServer {
 			}
 
 		}
+		
+		//If the request is ADDREVIEW, add the review json into the database
 		else if (operation.equals("ADDREVIEW")) {
 			input = split[1];
 			JSONObject json;
@@ -208,17 +221,18 @@ public class YelpDBServer {
 				input += split[i] + " ";
 			}
 			input += split[split.length - 1];
-
+				
+			//Attempt to add the json into the database
 			JSONParser parser = new JSONParser();
 			try {
 				json = (JSONObject) parser.parse(input);
 				addReview = YelpDb.reviewParser(json, true, newIdReview + "");
 				if(!restaurants.containsKey(addReview.getBusinessId())) {
-					System.out.println("ERR: NO_SUCH_RESTAURANT");
+					System.err.println("ERR: NO_SUCH_RESTAURANT");
 					return;
 				}
 				if(!users.containsKey(addReview.getUserId())) {
-					System.out.println("ERR: NO_SUCH_USER");
+					System.err.println("ERR: NO_SUCH_USER");
 					return;
 				}
 				reviews.put(newIdReview + "", addReview);
@@ -226,10 +240,12 @@ public class YelpDBServer {
 				System.out.println("ADDED REVIEW JSON:\n" + reviews.get(newIdReview + "").toJson());
 				newIdReview = newIdReview.add(BigInteger.valueOf(1));
 			} catch (Exception e) {
-				System.err.println(e);
+				System.err.println("ERR: INVALID_REVIEW_STRING");
 			}
 
 		}
+		
+		//If the operation is ADDUSER, add the user json into the database
 		else if (operation.equals("ADDUSER")) {
 			input = split[1];
 			JSONObject json;
@@ -239,6 +255,8 @@ public class YelpDBServer {
 			}
 			input += split[split.length - 1];
 			JSONParser parser = new JSONParser();
+			
+			//Attempt to add the json into the database.
 			try {
 				json = (JSONObject) parser.parse(input);
 				addUser = YelpDb.userParser(json, true, newIdUser + "");
@@ -246,9 +264,13 @@ public class YelpDBServer {
 				System.out.println("ADDED USER JSON:\n" + users.get(newIdUser + "").toJson());
 				newIdUser = newIdUser.add(BigInteger.valueOf(1));
 			} catch (Exception e) {
-				System.err.println(e);
+				System.err.println("ERR: INVALID_USER_STRING");
 			}
+			
+		//If the operation is something else, Check to see if it's a valid query.
 		} else {
+			
+			//Print the results if the query is valid 
 			try{
 				for (int i = 0; i < split.length - 1; i++) {
 					split[i] = split[i].trim();
@@ -260,6 +282,8 @@ public class YelpDBServer {
 				System.out.println(input);
 				QueryParser query = new QueryParser(input, database);
 				query.findRestaurant();
+				
+			//If the query is not valid, print an error.
 			} catch (Exception e) {
 				System.err.println("ERR: ILLEGAL_REQUEST");
 			}

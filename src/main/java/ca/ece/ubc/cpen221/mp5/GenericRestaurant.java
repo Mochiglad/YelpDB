@@ -3,6 +3,8 @@ package ca.ece.ubc.cpen221.mp5;
 import java.util.HashSet;
 
 public class GenericRestaurant extends GenericObject{
+	//RI: Restaurant must not be null, stars must be >= 0 and <= 5, 0 <= price <= 5, 
+	//AF: (this representation) -> Generic Restaurant
 	protected final boolean status;
 	protected final String url;
 	protected final double longitude;
@@ -21,6 +23,7 @@ public class GenericRestaurant extends GenericObject{
 	protected final String photoUrl;
 	protected final int price;
 	
+	//Constructs the restaurant given a representation
 	public GenericRestaurant(String id, boolean status, String url, double longitude, double latitude,
 							 HashSet<String> neighborhoods, HashSet<String> categories, HashSet<String> schools,
 							 String businessId, String name, String state, String BType, double stars2, String city,
@@ -44,6 +47,8 @@ public class GenericRestaurant extends GenericObject{
 		this.photoUrl = photoUrl;
 		this.price = price;
 	}
+	
+	//Functions to return immutable copies of the traits
 	public boolean getStatus() {
 		return this.status;
 	}

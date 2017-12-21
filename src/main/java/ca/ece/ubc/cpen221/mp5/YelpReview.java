@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class YelpReview extends GenericReview{
-
+	//RI: votes for any category cannot be negative
+	//AF: (this representation) -> Yelp Review
 	public YelpReview(String id, String businessId, HashMap<String, Integer> votes, String text, int stars,
 			String userId, String date) {
 		super(id, businessId, votes, text, stars, userId, date);
 	}
+	
+	//Return the object as a json String.
 	public String toJson() {
 		ArrayList<String> keys = new ArrayList<String>();
 		String output = "{\"type\": " + "\"" + "review" + "\"" + ", \"business_id\": " + "\"" + businessId + "\"" +

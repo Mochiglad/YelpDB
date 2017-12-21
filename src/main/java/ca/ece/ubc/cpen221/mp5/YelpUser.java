@@ -5,11 +5,14 @@ import java.util.Collection;
 import java.util.HashMap;
 
 public class YelpUser extends GenericUser{
-
+	//RI: votes cannot be negative for any category, 0 <= averageStars <= 5, reviewCount cannot be negative
+	//AF: (this representation) -> A Yelp user.
 	public YelpUser(String id, String url, HashMap<String, Integer> votes, int reviewCount, String name,
 			double averageStars) {
 		super(id, url, votes, reviewCount, name, averageStars);
 	}
+	
+	//Return this object as a json string.
 	public String toJson() {
 		String output = "{\"url\": " + "\"" + url + "\"" + ", \"votes\": {";
 		ArrayList<String> keys = new ArrayList<String>();

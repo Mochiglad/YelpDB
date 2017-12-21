@@ -3,7 +3,8 @@ package ca.ece.ubc.cpen221.mp5;
 import java.util.HashMap;
 
 public class GenericReview extends GenericObject{
-	
+	//RI: votes for any category cannot be negative
+	//AF: (this representation) -> Generic Review
 	protected final String businessId;
 	protected final HashMap<String, Integer> votes;
 	protected final String text;
@@ -11,6 +12,7 @@ public class GenericReview extends GenericObject{
 	protected final String userId;
 	protected final String date;
 	
+	//Constructs a generic website review from a representation
 	public GenericReview(String id, String businessId, HashMap<String, Integer> votes, String text, int stars2,
 						String userId, String date) {
 		super(id, "review");
@@ -21,6 +23,8 @@ public class GenericReview extends GenericObject{
 		this.userId = userId;
 		this.date = date;
 	}
+	
+	//Return immutable copies of traits
 	public String getBusinessId() {
 		return this.businessId;
 	}
